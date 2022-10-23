@@ -6,7 +6,7 @@ local FadeTweenInfo = TweenInfo.new(1,Enum.EasingStyle.Linear)
 
 local player = game:GetService("Players").LocalPlayer
 local Character = player.Character or player.CharacterAdded:Wait()
-local Humanoid = Character:WaitForChild("Humanoid",5)
+local Humanoid = Character:WaitForChild("Humanoid")
 local HP_Frame = script.Parent.Back.HP_BG.BAROFHOLDING.BAR_AMT
 local THIRST_Frame = script.Parent.Back.THIRST_BG.BAROFHOLDING.BAR_AMT
 local HUNGER_Frame = script.Parent.Back.HUNGER_BG.BAROFHOLDING.BAR_AMT
