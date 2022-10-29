@@ -20,7 +20,6 @@ Links.Parent = Tags
 local PPos = Instance.new("Folder")
 PPos.Name = "PlayerPos"
 
-local LeanState = {}
 local playerRotations = {}
 
 local MarketPlaceService = game:GetService("MarketplaceService")
@@ -28,27 +27,21 @@ local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local Remotes = ReplicatedStorage.Remotes
-local Settings = ReplicatedStorage.Settings
 local players = game:GetService("Players")
 local PlayerEvents = script.Parent.PlayerEvents
-local RS = game:GetService("RunService")
-local ItemSpawner = require(script.Parent:WaitForChild("Modules"):WaitForChild("SpawnItem"))
-local TagSystem = require(script.Parent:WaitForChild("Modules"):WaitForChild("TagSystem"))
-local BanSystem = require(script.Parent:WaitForChild("Modules"):WaitForChild("BanSystem"))
+
 local DataManager = require(script.Parent:WaitForChild("Modules"):WaitForChild("DataManager"))
 local Cooldown = require(script.Parent:WaitForChild("Modules"):WaitForChild("CooldownSystem"))
-local RunService = game:GetService("RunService")
 
-local Inventories = ServerStorage:WaitForChild("Stats"):WaitForChild("Inventories")
 function StopAnimation(Humanoid)
-	for i,v in pairs(Humanoid:GetPlayingAnimationTracks()) do
+	for _,v in pairs(Humanoid:GetPlayingAnimationTracks()) do
 		v:Stop()
 	end
 end
 
 
 function CanCollide(Model, Variable)
-	for i,v in pairs(Model:GetChildren()) do
+	for _,v in pairs(Model:GetChildren()) do
 		if v:IsA("BasePart") then
 			v.CanCollide = Variable
 		end
@@ -58,7 +51,7 @@ function CanCollide(Model, Variable)
 	end
 end
 function Transparency(Model, Variable)
-	for i,v in pairs(Model:GetChildren()) do
+	for _,v in pairs(Model:GetChildren()) do
 		if v:IsA("BasePart") then
 			v.Transparency = Variable
 		end
@@ -82,19 +75,19 @@ PlayerEvents.CharacterAdded.Event:Connect(function(player,character)
 	-- add custom cosmetics, if special :)
 	character.Archivable = true
 	if ReplicatedStorage.Clothing:FindFirstChild(player.Name) then
-		for i,v in character:GetChildren() do
+		for _,v in character:GetChildren() do
 			if (v:IsA("Hat") or v:IsA("Accessory")) and v.Name ~= "Beard" then
 				v:Destroy()
 			end
 		end
-		for i,v in ReplicatedStorage.Clothing:FindFirstChild(player.Name):GetChildren() do
+		for _,v in ReplicatedStorage.Clothing:FindFirstChild(player.Name):GetChildren() do
 			local clone = v:Clone()
 			clone.Parent = character
 		end
 	end
 end)
 
-PlayerEvents.PlayerDied.Event:Connect(function(player,character)
+PlayerEvents.PlayerDied.Event:Connect(function(player)
 	print(player.Name.." died!")
 	pcall(function()
 			if not PPos:FindFirstChild(tostring(player.UserId)) then
@@ -104,7 +97,7 @@ PlayerEvents.PlayerDied.Event:Connect(function(player,character)
 
 		local data = DataManager.CombatLog.GetAllRecipientData(player)
 		local cnt =0
-		for _,x in data do
+		for _,_ in data do
 			cnt+=1
 		end
 		print(#data)
@@ -207,14 +200,12 @@ Remotes.Core.ReplicateRotation.OnServerEvent:Connect(function(player,WaistC2)
 		playerRotations[player.UserId]["C2"]=WaistC2
 	end
 	if (WaistC2 - playerRotations[player.UserId]["C2"]) >= chckAmount or (WaistC2 - playerRotations[player.UserId]["C2"]) <= -chckAmount then
-		local goal1 = CFrame.new(0, -player.Character.UpperTorso.Size.Y/2, 0) --player.Character.UpperTorso.Waist.C1
-		local goal2
 		playerRotations[player.UserId]["C2"] = WaistC2
 	end
 
 end) 
 
-RunService.Stepped:Connect(function(dlta)
+RunService.Stepped:Connect(function()
 	for _,player in players:GetPlayers() do
 		if player.Character then
 			pcall(function()

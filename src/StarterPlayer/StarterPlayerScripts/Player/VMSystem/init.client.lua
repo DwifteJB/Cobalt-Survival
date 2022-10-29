@@ -5,7 +5,6 @@
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local TweenService = game:GetService("TweenService")
-local starterGui = game:GetService("StarterGui")
 local RS = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -63,7 +62,7 @@ local reloading = false
 local QLean = nil
 local ELean = nil
 local MeleeThrow = false
-local BeforeLeanCF
+
 --
 
 --[[
@@ -72,19 +71,22 @@ local BeforeLeanCF
 
 ]]
 
+function Bob(addition)
+	return math.sin(tick() * addition * 1.3) * 0.65 -- increase multipl for faster bobbing
+end
 
 local RenderStepped = {}
 function RenderStepped.CurrentWeapon(delta)
 	local GunRCSpringUpdate = GunRCSpring:update(delta)
 	local GunBobUpdate = BobbingSpring:update(delta)
-	local updatedRecoilSpring = RCSpring:update(delta)	
+	local updatedRecoilSpring = RCSpring:update(delta)
 	if CurrentWeapon and CurrentWeapon.Parent then
 		CurrentWeapon.Humanoid.PlatformStand = true
 		CurrentWeapon.Humanoid.AutoRotate = false
 		CurrentWeapon.Humanoid.AutoJumpEnabled = false
 		CurrentWeapon.Humanoid.UseJumpPower = false
 		local rotation = Camera.CFrame:ToObjectSpace(lastCameraCF)
-		local x,y,z = rotation:ToOrientation()
+		local x,y = rotation:ToOrientation()
 		if aiming == false then
 			local bob = Vector3.new(Bob(10),Bob(5),Bob(5))
 			BobbingSpring:shove(bob / 10 * (player.Character.HumanoidRootPart.Velocity.Magnitude / 10))
@@ -114,9 +116,7 @@ function RenderStepped.CurrentWeapon(delta)
 	end
 end
 
-function Bob(addition) 
-	return math.sin(tick() * addition * 1.3) * 0.65 -- increase multipl for faster bobbing
-end
+
 
 function resetVals()
 	heldMouse1 = false
@@ -235,13 +235,13 @@ end
 
 ]]
 
-
-player.CharacterRemoving:Connect(function(character)
-	renderDead()
-end)
-
 player.CharacterAdded:Connect(function(character)
 	dead = false
+	Camera.CameraType = Enum.CameraType.Follow
+	Camera.CameraSubject = character:WaitForChild("Humanoid")
+	character:WaitForChild("Humanoid").Died:Connect(function()
+		renderDead()
+	end)
 end)
 
 --[[
@@ -250,6 +250,17 @@ end)
 					
 
 ]]
+
+Remotes.Core.SetCamera.OnClientEvent:Connect(function(part)
+	dead = true
+	Camera.CameraType = Enum.CameraType.Attach
+	print(part)
+	Camera.CameraSubject = part:WaitForChild("Head")
+	print(part:WaitForChild("Head"))
+	Camera.CameraSubject = part:WaitForChild("Head")
+
+	
+end)
 
 Remotes.Client.Inventory.deEquip.OnInvoke = function()
 	deEquip()
@@ -429,7 +440,6 @@ ControlsBegan.MouseButton1.Event:Connect(function()
 			heldMouse1 = false
 			return
 		end --act as a 'control'
-		local run = repItems.Bolt.Value  -- https://i.imgur.com/VxjbSpm.png
 		local coil = repItems.Recoil.Value
 
 		local FirePoint = CurrentWeapon[CurrentWeapon.Name]:FindFirstChild("FirePoint")
@@ -441,7 +451,7 @@ ControlsBegan.MouseButton1.Event:Connect(function()
 				end)
 				local lastResponse = os.clock()
 				if FirePoint then
-					for i,v in FirePoint:GetChildren() do
+					for _,v in FirePoint:GetChildren() do
 						v.Enabled = true
 					end
 				end
@@ -466,11 +476,7 @@ ControlsBegan.MouseButton1.Event:Connect(function()
 					end)()
 					coroutine.wrap(function()
 						local firVal = Remotes.Gun.Fire:InvokeServer(mouse.Hit.Position,CurrentWeapon.Tag.Value,startD)
-						if firVal[1] == 0 then
-							lastResponse = os.clock()
-						elseif firVal[1] == 1 then
-							--adWait = 0.02 -- lag break, incase you are lagging *alot.*
-							--task.wait(adWait)
+						if firVal[1] == 0 or firVal[1] == 1 then
 							lastResponse = os.clock()
 						elseif firVal[1] == 4 then
 							deEquip()
@@ -497,7 +503,7 @@ ControlsBegan.MouseButton1.Event:Connect(function()
 				end
 				task.wait(repItems.TimeBetweenBullets.Value)
 				if FirePoint then
-					for i,v in FirePoint:GetChildren() do
+					for _,v in FirePoint:GetChildren() do
 						v.Enabled = false
 					end
 				end
@@ -623,6 +629,6 @@ end)
 
 ]]
 
-RS.RenderStepped:connect(function(delta)
+RS.RenderStepped:Connect(function(delta)
 	RenderStepped.CurrentWeapon(delta)
 end)

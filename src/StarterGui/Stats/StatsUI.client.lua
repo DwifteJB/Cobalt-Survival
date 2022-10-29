@@ -1,5 +1,3 @@
-local timer = os.clock()
-
 local TweenService = game:GetService("TweenService")
 
 local FadeTweenInfo = TweenInfo.new(1,Enum.EasingStyle.Linear)

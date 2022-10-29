@@ -1,13 +1,10 @@
 local object			= nil
-local dragInput			= nil
 local dragStart			= nil
 local startPos			= nil
 local preparingToDrag	= false
 local inputChanged		= nil
 local Dragging		= false
-local InputBegan = nil
-local DragStarted	= nil
-local inProg = false
+
 local GlobalRefreshOn = false
 local LocalRefresh = false
 local InUse = {}
@@ -19,7 +16,6 @@ local FadeTween = TweenInfo.new(0.1,Enum.EasingStyle.Sine,Enum.EasingDirection.O
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UIS = game:GetService("UserInputService")
 local Player = game:GetService("Players").LocalPlayer
-local UserInputService = game:GetService("UserInputService")
 local Remotes = ReplicatedStorage.Remotes
 local Inventory = script.Parent.Inventory.InvSlots
 local ItemContainer = Inventory.Parent.ItemContainer
@@ -38,10 +34,10 @@ function Fade(Object)
 	for i,v in Object:GetChildren() do
 		if v:IsA("Frame") and tonumber(v.Name) ~= nil then
 			v.MouseEnter:Connect(function() -- local T = TweenService:Create(v,FadeTween,{BackgroundColor3=Color3.new(0.164706, 0.164706, 0.164706)})
-				local T = TweenService:Create(v,FadeTween,{BackgroundColor3=Color3.new(0.278431, 0.278431, 0.278431)}):Play()
+				TweenService:Create(v,FadeTween,{BackgroundColor3=Color3.new(0.278431, 0.278431, 0.278431)}):Play()
 			end)
 			v.MouseLeave:Connect(function()
-				local T = TweenService:Create(v,FadeTween,{BackgroundColor3=Color3.new(0.164706, 0.164706, 0.164706)}):Play()
+				TweenService:Create(v,FadeTween,{BackgroundColor3=Color3.new(0.164706, 0.164706, 0.164706)}):Play()
 			end)
 		end
 	end
@@ -222,10 +218,10 @@ function redrawInv(InvContents)
 				Slot.Name = string.format("S%s",tostring(i))
 
 				Slot.MouseEnter:Connect(function() -- local T = TweenService:Create(v,FadeTween,{BackgroundColor3=Color3.new(0.164706, 0.164706, 0.164706)})
-					local T = TweenService:Create(Slot,FadeTween,{BackgroundColor3=Color3.new(0.278431, 0.278431, 0.278431)}):Play()
+					TweenService:Create(Slot,FadeTween,{BackgroundColor3=Color3.new(0.278431, 0.278431, 0.278431)}):Play()
 				end)
 				Slot.MouseLeave:Connect(function()
-					local T = TweenService:Create(Slot,FadeTween,{BackgroundColor3=Color3.new(0.164706, 0.164706, 0.164706)}):Play()
+					TweenService:Create(Slot,FadeTween,{BackgroundColor3=Color3.new(0.164706, 0.164706, 0.164706)}):Play()
 				end)
 			end
 			for i=1,6,1 do
@@ -233,10 +229,10 @@ function redrawInv(InvContents)
 				Slot.Name = string.format("E%s",tostring(i))
 				Slot.Parent = PlayerBagEquipment
 				Slot.MouseEnter:Connect(function() -- local T = TweenService:Create(v,FadeTween,{BackgroundColor3=Color3.new(0.164706, 0.164706, 0.164706)})
-					local T = TweenService:Create(Slot,FadeTween,{BackgroundColor3=Color3.new(0.278431, 0.278431, 0.278431)}):Play()
+					TweenService:Create(Slot,FadeTween,{BackgroundColor3=Color3.new(0.278431, 0.278431, 0.278431)}):Play()
 				end)
 				Slot.MouseLeave:Connect(function()
-					local T = TweenService:Create(Slot,FadeTween,{BackgroundColor3=Color3.new(0.164706, 0.164706, 0.164706)}):Play()
+					TweenService:Create(Slot,FadeTween,{BackgroundColor3=Color3.new(0.164706, 0.164706, 0.164706)}):Play()
 				end)
 			end
 
@@ -301,10 +297,10 @@ function redrawInv(InvContents)
 				Slot.Name = string.format("S%s",tostring(i))
 				Slot.Parent = ItemInContainer
 				Slot.MouseEnter:Connect(function() -- local T = TweenService:Create(v,FadeTween,{BackgroundColor3=Color3.new(0.164706, 0.164706, 0.164706)})
-					local T = TweenService:Create(Slot,FadeTween,{BackgroundColor3=Color3.new(0.278431, 0.278431, 0.278431)}):Play()
+					TweenService:Create(Slot,FadeTween,{BackgroundColor3=Color3.new(0.278431, 0.278431, 0.278431)}):Play()
 				end)
 				Slot.MouseLeave:Connect(function()
-					local T = TweenService:Create(Slot,FadeTween,{BackgroundColor3=Color3.new(0.164706, 0.164706, 0.164706)}):Play()
+					TweenService:Create(Slot,FadeTween,{BackgroundColor3=Color3.new(0.164706, 0.164706, 0.164706)}):Play()
 				end)
 			end
 			for slotnm,v in lclChestData.Values do
@@ -349,7 +345,7 @@ Remotes.Inventory.UpdateContents.OnClientEvent:Connect(function(mvT)
 	lclChestData = mvT
 	coroutine.wrap(function()
 		local InvContents = Remotes.Inventory.getInventoryContents:InvokeServer() 
-		redrawInv(InvContents,lclChestData)
+		redrawInv(InvContents)
 		renderHotbar(InvContents)
 	end)()
 end)
@@ -369,7 +365,7 @@ Remotes.Client.Inventory.OpenInventory.OnInvoke = function(chestData)
 		lclChestData = chestData
 		coroutine.wrap(function()
 			local InvContents = Remotes.Inventory.getInventoryContents:InvokeServer() 
-			redrawInv(InvContents,lclChestData)
+			redrawInv(InvContents)
 			renderHotbar(InvContents)
 		end)()
 
@@ -377,7 +373,7 @@ Remotes.Client.Inventory.OpenInventory.OnInvoke = function(chestData)
 	else
 		if Dragging == true then return 0 end
 		lclChestData = nil
-		local InvContents = Remotes.Inventory.getInventoryContents:InvokeServer("quick") -- quick, possible error (since closing)
+		Remotes.Inventory.getInventoryContents:InvokeServer("quick") -- quick, possible error (since closing)
 		script.Parent.Inventory.Visible = false
 		return false
 	end
@@ -462,7 +458,6 @@ UIS.InputBegan:Connect(function(Input,GPE)
 										end
 									end)()				
 									--cpy data
-									local SecondObjectGrabbedCp = SecondObjectGrabbed:Clone()
 									local vItemCopy = SecondObjectGrabbed.Item.Image
 									local vTextCopy = SecondObjectGrabbed.Quantity.Text
 									local vCapVis = SecondObjectGrabbed.Quantity.Visible
@@ -477,7 +472,6 @@ UIS.InputBegan:Connect(function(Input,GPE)
 									SecondObjectGrabbed.Quantity.Visible = objTxtVis
 									SecondObjectGrabbed.Item.Visible = objVisible
 									--
-									inProg = true
 									SecondObjectGrabbed.Item.ImageColor3 = Color3.new(0,0,0)
 									object.ImageColor3 = Color3.new(0,0,0)
 									local mv = Remotes.Inventory.swapSlots:InvokeServer(object.Parent.Name,SecondObjectGrabbed.Name)
@@ -511,7 +505,6 @@ UIS.InputBegan:Connect(function(Input,GPE)
 									local InvContents = Remotes.Inventory.getInventoryContents:InvokeServer()
 									redrawInv(InvContents)
 									renderHotbar(InvContents)
-									inProg = false
 								end
 							end
 						end)()
@@ -535,7 +528,7 @@ UIS.InputBegan:Connect(function(Input,GPE)
 						startPos 	= object.Position
 					end
 					if Dragging == true then
-						local newPosition = update(input)
+						update(input)
 					end
 				end)
 
@@ -577,7 +570,7 @@ end)
 
 Remotes.Client.UI.GetItemCapacity.OnInvoke = function(tag,val)
 	for _,itm in ipairs(HotBar:GetChildren()) do
-		if itm:isA("Frame") then
+		if itm:IsA("Frame") then
 			if itm:FindFirstChild("Tag") then
 				if itm.Tag.Value == tag then
 					return itm.Quantity.Text

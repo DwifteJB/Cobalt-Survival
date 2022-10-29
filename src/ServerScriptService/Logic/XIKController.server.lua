@@ -63,6 +63,15 @@ PlayerEvents.CharacterAdded.Event:Connect(function(player,Char)
 	RightLegIK.Target = RightIKObj
 end)
 
+PlayerEvents.PlayerDied.Event:Connect(function(_,character)
+	local Humanoid = character.Humanoid
+	if Humanoid:FindFirstChild("RightLeg") then
+		Humanoid:FindFirstChild("RightLeg"):Destroy()
+	end
+	if Humanoid:FindFirstChild("LeftLeg") then
+		Humanoid:FindFirstChild("LeftLeg"):Destroy()
+	end
+end)
 
 local params = RaycastParams.new()
 params.FilterType = Enum.RaycastFilterType.Blacklist

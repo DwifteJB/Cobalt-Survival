@@ -53,6 +53,7 @@ PlayerEvents.PlayerAdded.Event:Connect(function(Player)
 end)
 
 PlayerEvents.PlayerDied.Event:Connect(function(Player,character)
+
 	if character.RightHand:FindFirstChild("ToolMotor6D") then
 		character.RightHand:FindFirstChild("ToolMotor6D").Part1.Parent:Destroy()
 		character.RightHand:FindFirstChild("ToolMotor6D"):Destroy()
@@ -78,7 +79,6 @@ PlayerEvents.PlayerDied.Event:Connect(function(Player,character)
 		end
 	end
 	for i,Tag in acceptableTags do
-		print(i,Tag)
 		Items[tostring(Tag)].Owner.Value = 0
 		InventoryManager.Storage.AddTagToStorage(Storage,tostring(InvSlots),tonumber(Tag))
 		InvSlots+=1
@@ -87,6 +87,19 @@ PlayerEvents.PlayerDied.Event:Connect(function(Player,character)
 
 	character.Archivable = true
 	local BagItem = character:Clone()
+
+	for _,v in character:GetChildren() do
+		if not table.find({"LocalScript","Humanoid"},v.ClassName) then
+			pcall(function()
+				v:Destroy()
+			end)
+		end
+		if table.find({"Accessory","Hat","Pants"},v.ClassName) then
+			v:Destroy()
+		end
+	end
+
+
 	local Filter = {"Humanoid","LocalScript"}
 
 	for _,v in BagItem:GetChildren() do
@@ -110,6 +123,7 @@ PlayerEvents.PlayerDied.Event:Connect(function(Player,character)
 	Tag.Name = "Tag"
 	Tag.Parent = BagItem
 	BagItem.Parent = workspace.DroppedItems.Bags
+
 	InventoryManager.Storage.LinkObject(Storage,BagItem)
 	Despawner.Storage(Storage,100,{
 		["SpawnAnother"]=true,
@@ -117,12 +131,14 @@ PlayerEvents.PlayerDied.Event:Connect(function(Player,character)
 		["DespawnTime"]=300,
 		["Name"]=Player.DisplayName.."'s Bag"
 	})
+	BagItem.HumanoidRootPart.Anchored = false
 	local V = Instance.new("BodyVelocity")
 	V.MaxForce = Vector3.new(math.huge,math.huge,math.huge)
-	V.Velocity = Vector3.new(3,1,1)
+	V.Velocity = Vector3.new(3,4,1)
 	V.P = 1250
 	V.Parent = BagItem.HumanoidRootPart
 	Debris:AddItem(V,0.2)
+	Remotes.Core.SetCamera:FireClient(Player, BagItem)
 end)
 
 local Storage = InventoryManager.Storage.CreateContainer("36",{["RemoveWhenEmpty"]=true,["DisableTransfer"]=false})

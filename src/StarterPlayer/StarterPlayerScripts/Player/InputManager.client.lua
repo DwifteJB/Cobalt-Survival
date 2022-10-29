@@ -4,9 +4,6 @@ local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local Remotes = game:GetService("ReplicatedStorage").Remotes
 
--- Values
-local debounce = false
-
 -- Signals
 
 local Controls = {

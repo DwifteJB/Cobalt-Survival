@@ -8,9 +8,10 @@ local Char = script.Parent
 local Humanoid = Char:WaitForChild("Humanoid")
 
 Humanoid.Died:Connect(function()
-	Humanoid.LeftLegIK:Destroy()
-	Humanoid.RightLegIK:Destroy()
+	Humanoid.LeftLegClient:Destroy()
+	Humanoid.RightLegClient:Destroy()
 end)
+
 local IKController = workspace:WaitForChild("IKControllers")
 local Client = IKController:FindFirstChild("Client") or Instance.new("Folder")
 Client.Name = "Client"
