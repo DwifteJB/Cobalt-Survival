@@ -51,31 +51,6 @@ coroutine.wrap(function()
 				PlayerPositions[player.UserId] = {}
 				for _,v in player.Character:GetChildren() do
 					if v:IsA("MeshPart") or v:IsA("Part") then
---[[					if Trace == true then
-							if not Tracer:FindFirstChild(player.UserId) then
-								local PT = Instance.new("Folder")
-								PT.Name = player.UserId
-								PT.Parent = Tracer
-							end
-							for _,x in Tracer:GetChildren() do
-								for _,t in x:GetChildren() do
-									t:Destroy()
-								end
-							end
-							local V = v:Clone()
-							for _,x in V:GetChildren() do
-								pcall(function()
-									x:Destroy()
-								end)
-							end
-							PS:SetPartCollisionGroup(V,"DoNot")
-							V.Anchored = true
-							CanCollide(V,false)
-
-							V.Color = Color3.new(0,0.5,1)
-							V.Parent = Tracer[player.UserId]
-							V.Transparency = 0.7
-						end--]]
 						PlayerPositions[player.UserId][v.Name] = v.CFrame
 					end
 				end

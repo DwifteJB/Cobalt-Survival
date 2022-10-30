@@ -30,7 +30,6 @@ function RenderStepped.Build()
 
 			if ray and ray.Instance then
 				local rayIns = ray.Instance
-				local rayPos = ray.Position
 				if attachedTo == true then
 					if (ray.Position - attachedAttachment.WorldPosition).Magnitude > 5 or attachedAttachment:GetAttribute("CanSnap") == false then
 						attachedTo = false

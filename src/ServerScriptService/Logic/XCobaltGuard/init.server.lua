@@ -31,7 +31,7 @@ end
 
 PlayerEvents.CharacterAdded.Event:Connect(function(player,character)
 	ClientSideOn[player.UserId] = {}
-	if player:GetRankInGroup(15771966) <= 2 then
+	if player:GetRankInGroup(15771966) <= 3 then
 		warnings[player.Name] = {}
 		local partsDet = {}
 		local parts = player.Character:GetChildren()
