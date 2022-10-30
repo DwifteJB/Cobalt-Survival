@@ -65,7 +65,7 @@ coroutine.wrap(function()
 						for ClientNum,e in BulData do
 							if tonumber(ClientNum) == tonumber(ServerNum) then
 								-- cross side refrence
-
+								if not e.Hit or not v.Hit then return end
 								local plrAtcking1 = players:GetPlayerFromCharacter(e.Hit:FindFirstAncestorWhichIsA("Model"))
 								local plrAttcking2 = players:GetPlayerFromCharacter(v.Hit:FindFirstAncestorWhichIsA("Model"))
 								if not plrAtcking1 and plrAttcking2 then
