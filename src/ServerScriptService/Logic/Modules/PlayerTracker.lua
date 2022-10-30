@@ -1,6 +1,15 @@
 local Tracked = {}
 
+local HeldItem = {}
 local PT = {}
+
+function PT:SetHeldItem(player,tag)
+	HeldItem[player.UserId] = tag
+end
+
+function PT:GetHeldItem(player)
+	return HeldItem[player.UserId]
+end
 
 function PT:PlayersInActionWithKey(Action,AKey)
 	local playerIds = {}

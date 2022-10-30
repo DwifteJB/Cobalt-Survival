@@ -140,7 +140,7 @@ function SendAnimationToServer(animlol,forceTag)
 			forceTag = CurrentWeapon:GetAttribute("Tag")
 		end
 		Remotes.Core.PlayAnimation:FireServer(animlol,forceTag)
-	
+
 	end
 
 end
@@ -154,7 +154,7 @@ function EquipItem(KeyCode)
 	local name = ItemDetails[2]
 	local tag = ItemDetails[1]
 	local Tool = ReplicatedStorage.Items[name]
-	if Tool.Tool.Value == true and reloading == false and dead == false then
+	if Tool.Tool.Value == true and dead == false then
 		if CurrentWeapon then 
 			deEquip()
 		end
@@ -168,7 +168,6 @@ function EquipItem(KeyCode)
 		coroutine.wrap(function()
 			for _, VM in workspace.CurrentCamera.ViewModels:GetChildren() do
 				if VM.Name ~= name then 
-					print(VM)
 					VM:SetPrimaryPartCFrame(CFrame.new(0,-100,0))
 				end
 
@@ -362,22 +361,24 @@ ControlsBegan.Reload.Event:Connect(function()
 			Idle:Play()
 		end
 		reloading = true
-		isToolReady = false
 		Remotes.Gun.Reload:FireServer(CurrentWeapon:GetAttribute("Tag"))
+		local Cache = CurrentWeapon
 		local ReloadAnim = CurrentWeapon.Humanoid:LoadAnimation(CurrentWeapon.ClientAnimations.Reload)
 		SendAnimationToServer("Reload")
 		General.StopAnimation(CurrentWeapon.Humanoid)
 		ReloadAnim:Play()
 		ReloadAnim.Stopped:Connect(function()
-			if CurrentWeapon.Name == "Crossbow" then
-				CurrentWeapon[CurrentWeapon.Name].Arrow.Transparency = 0
-			end
-			reloading = false
-			isToolReady = true
-			General.StopAnimation(CurrentWeapon.Humanoid)
-			local Idle = CurrentWeapon.Humanoid:LoadAnimation(CurrentWeapon.ClientAnimations.Idle)
-			Idle.Looped = true
-			Idle:Play()
+			if not CurrentWeapon or Cache ~= CurrentWeapon then return end
+			pcall(function()
+				if CurrentWeapon.Name == "Crossbow" then
+					CurrentWeapon[CurrentWeapon.Name].Arrow.Transparency = 0
+				end
+				reloading = false
+				General.StopAnimation(CurrentWeapon.Humanoid)
+				local Idle = CurrentWeapon.Humanoid:LoadAnimation(CurrentWeapon.ClientAnimations.Idle)
+				Idle.Looped = true
+				Idle:Play()				
+			end)
 
 		end)
 

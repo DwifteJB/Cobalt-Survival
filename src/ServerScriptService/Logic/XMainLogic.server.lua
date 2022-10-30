@@ -3,7 +3,7 @@
 		Written by Dwifte
 ]]--
 local ServerStorage = game:GetService("ServerStorage")
-
+local SwappedWeapon = script.Parent.PlayerEvents.PlayerSwappedWeapon
 local Tags = Instance.new("Folder")
 Tags.Name = "Tags"
 Tags.Parent = ServerStorage
@@ -32,6 +32,7 @@ local PlayerEvents = script.Parent.PlayerEvents
 
 local DataManager = require(script.Parent:WaitForChild("Modules"):WaitForChild("DataManager"))
 local Cooldown = require(script.Parent:WaitForChild("Modules"):WaitForChild("CooldownSystem"))
+local PlayerTracker = require(script.Parent:WaitForChild("Modules"):WaitForChild("PlayerTracker"))
 
 function StopAnimation(Humanoid)
 	for _,v in pairs(Humanoid:GetPlayingAnimationTracks()) do
@@ -153,6 +154,8 @@ Remotes.Core.PlayAnimation.OnServerEvent:Connect(function(player,animation,Tag)
 		Motor6D.Parent = player.Character.RightHand
 
 		local Anim = player.Character.Humanoid:LoadAnimation(ViewModel.ServerAnimations[animation])
+		PlayerTracker:SetHeldItem(player,Tag)
+		SwappedWeapon:Fire(player,Tag)
 		Anim:Play()
 		Anim.Stopped:Connect(function()
 			player.Character.Humanoid:LoadAnimation(ViewModel.ServerAnimations.Idle):Play()

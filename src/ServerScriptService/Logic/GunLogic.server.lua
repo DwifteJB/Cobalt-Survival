@@ -3,7 +3,7 @@ math.randomseed(tick())
 local Desync = 5
 
 local fireData = {}
-local warns = {}
+local ReloadData = {}
 local BulletData = {}
 local PlayerPositions = {}
 
@@ -13,13 +13,14 @@ local players = game.Players
 local ServerService = game:GetService("ServerStorage")
 local Tags = ServerService:WaitForChild("Tags")
 local Items = Tags:WaitForChild("Items")
-
+local SwappedWeapon = script.Parent.PlayerEvents.PlayerSwappedWeapon
 
 local InventoryManager = require(script.Parent:WaitForChild("Modules"):WaitForChild("InventoryManager"))
 local BanSystem = require(script.Parent:WaitForChild("Modules"):WaitForChild("BanSystem"))
 local DamageSystem = require(script.Parent:WaitForChild("Modules"):WaitForChild("DamageSystem"))
 local Cooldown = require(script.Parent:WaitForChild("Modules"):WaitForChild("CooldownSystem"))
 local Barrel = require(script.Parent:WaitForChild("Modules"):WaitForChild("BarrelSystem"))
+local PlayerTracker = require(script.Parent:WaitForChild("Modules"):WaitForChild("PlayerTracker"))
 
 local bulletsFolder = Instance.new("Folder")
 bulletsFolder.Name = "BulletsFolder"
@@ -34,6 +35,21 @@ castBehaviour.AutoIgnoreContainer = true
 castBehaviour.Acceleration = Vector3.new(0, -workspace.Gravity*0.75, 0)
 castParams.IgnoreWater = true
 castParams.FilterType = Enum.RaycastFilterType.Blacklist
+
+
+
+SwappedWeapon.Event:Connect(function(player,newTag)
+	if ReloadData[player.UserId] == nil then
+		ReloadData[player.UserId] = {
+			["Reloading"]=false,
+			["Tag"]=0
+		}
+	elseif ReloadData[player.UserId]["Tag"] ~= newTag then
+		if ReloadData[player.UserId]["Reloading"] == true then
+			ReloadData[player.UserId]["Reloading"] = false
+		end
+	end
+end)
 --[[local Tracer = Instance.new("Folder")
 Tracer.Name = "Tracer"
 Tracer.Parent =workspace--]]
@@ -188,8 +204,14 @@ Remotes.Gun.Fire.OnServerInvoke = function(player,mousePos,Tag,timeSent)
 	if BulletData[player.UserId] == nil then
 		BulletData[player.UserId] = {}
 	end
-	if fireData[player.UserId][currentWeapon.NameTag.Value] == nil then
-		fireData[player.UserId][currentWeapon.NameTag.Value] = {
+	if ReloadData[player.UserId] == nil then
+		ReloadData[player.UserId] = {
+			["Reloading"]=false,
+			["Tag"]=0
+		}
+	end
+	if fireData[player.UserId][Tag] == nil then
+		fireData[player.UserId][Tag] = {
 			["LastShot"] = os.clock()-10,
 			["001Warns"] = 0,
 			["Reloading"] = false
@@ -197,7 +219,7 @@ Remotes.Gun.Fire.OnServerInvoke = function(player,mousePos,Tag,timeSent)
 	end
 	local inv = InventoryManager.Player.GetTagSlot(player,Tag)
 	if inv == false or tonumber(inv) > 6 then
-		fireData[player.UserId][currentWeapon.NameTag.Value].LastShot = os.clock() + 5
+		fireData[player.UserId][Tag].LastShot = os.clock() + 5
 		code[1] = 4
 		code[2] = 5
 		return code
@@ -205,12 +227,12 @@ Remotes.Gun.Fire.OnServerInvoke = function(player,mousePos,Tag,timeSent)
 
 	local ItemValues = ReplicatedStorage.Items[currentWeapon.NameTag.Value]
 
-	if fireData[player.UserId][currentWeapon.NameTag.Value].LastShot + ItemValues.TimeBetweenBullets.Value >= os.clock() then 
+	if fireData[player.UserId][Tag].LastShot + ItemValues.TimeBetweenBullets.Value >= os.clock() then 
 		code[1] = 1
 		return code
 	end 
-	if currentWeapon.Magazine.Value <= 0 or fireData[player.UserId][currentWeapon.NameTag.Value]["Reloading"] == true then
-		fireData[player.UserId][currentWeapon.NameTag.Value].LastShot = os.clock() + ItemValues.ReloadTime.Value
+	if currentWeapon.Magazine.Value <= 0 or ReloadData[player.UserId].Reloading == true then
+		fireData[player.UserId][Tag].LastShot = os.clock() + ItemValues.ReloadTime.Value
 		code[1] = 7
 		return code
 	end
@@ -250,7 +272,7 @@ Remotes.Gun.Fire.OnServerInvoke = function(player,mousePos,Tag,timeSent)
 	castBehaviour.CosmeticBulletContainer = bulletsFolder
 	castBehaviour.CosmeticBulletTemplate = bullet
 	local sprd = ItemValues.Spread.Value
-	fireData[player.UserId][currentWeapon.NameTag.Value].LastShot = os.clock()
+	fireData[player.UserId][Tag].LastShot = os.clock()
 	currentWeapon.Magazine.Value -= 1
 	coroutine.wrap(function()
 		Remotes.Gun.ammoBack:FireClient(player,Tag,currentWeapon.Magazine.Value)
@@ -296,14 +318,10 @@ Remotes.Gun.Reload.OnServerEvent:Connect(function(player,tag)
 
 	local currentWeapon = Items[tag]
 	if Items[tag] then
-		if fireData[player.UserId] == nil then
-			fireData[player.UserId] = {}
-		end
-		if fireData[player.UserId][currentWeapon.NameTag.Value] == nil then
-			fireData[player.UserId][currentWeapon.NameTag.Value] = {
-				["LastShot"] = os.clock()-10,
-				["001Warns"] = 0,
-				["Reloading"] = false
+		if ReloadData[player.UserId] == nil then
+			ReloadData[player.UserId] = {
+				["Reloading"]=false,
+				["Tag"]=0
 			}
 		end
 		local ItemValues = ReplicatedStorage.Items[currentWeapon.NameTag.Value]
@@ -311,17 +329,22 @@ Remotes.Gun.Reload.OnServerEvent:Connect(function(player,tag)
 		if currentWeapon.Owner.Value ~= player.UserId then 
 			BanSystem.AnticheatBanOnline(player,"026","Player tried to reload a gun that didn't belong to them")
 		end
-		fireData[player.UserId][currentWeapon.NameTag.Value]["Reloading"] = true
+		ReloadData[player.UserId]["Reloading"] = true
+		ReloadData[player.UserId]["Tag"] = tag
 
 		coroutine.wrap(function()
 			task.delay(ItemValues.ReloadTime.Value,function()
+				local inv = InventoryManager.Player.GetTagSlot(player,tag)
+				local HeldTag = PlayerTracker:GetHeldItem(player)
+
+				if HeldTag ~= tag then return end
+				if tonumber(inv) > 6 then return end 
+				if ReloadData[player.UserId]["Reloading"] == false then return end
 				Items[tag].Magazine.Value = ItemValues.MagazineValue.Value
-				fireData[player.UserId][currentWeapon.NameTag.Value]["Reloading"] = false
+				ReloadData[player.UserId]["Reloading"] = false
 				Remotes.Gun.ammoBack:FireClient(player,tag,Items[tag].Magazine.Value)
-				coroutine.wrap(function()
-					local inv = InventoryManager.Player.GetTagSlot(player,tag)
-					InventoryManager.Player.ChangeVal(player,inv,"Magazine",Items[tag].Magazine.Value)
-				end)()
+
+				InventoryManager.Player.ChangeVal(player,inv,"Magazine",Items[tag].Magazine.Value)
 			end)
 		end)()
 		return ItemValues.ReloadTime.Value
