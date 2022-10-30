@@ -105,7 +105,7 @@ function IH.Storage.GetAllItemsFromStorage(storageTag)
 	return Storage[tostring(storageTag)]["Contains"]
 end
 
-function IH.Storage.AddTagToStorage(storageTag:string,slot:string,Tag:int)
+function IH.Storage.AddTagToStorage(storageTag:string,slot:string,Tag:Int)
 	--local Storage = InventoryManager.Storage.CreateContainer("12",{["RemoveWhenEmpty"]=true,["DisableTransfer"]=true})String,List
 	--InventoryManager.Storage.AddTagToStorage(Storage,tostring(itmSlots),SpawnItem.SpawnWeapon("World",val)) --String,String,Int
 	local itemVal = Items[Tag]
@@ -262,23 +262,21 @@ function IH.Player.UpdateTagsWithinInv(player)
 
 	end
 	local checkedtags = {}
-	for _,slot in inventories[player.UserId] do
-		for i,v in slot do
-			coroutine.wrap(function()
-				if not Items:FindFirstChild(slot.Tag) then
-					inventories[player.UserId][_] = nil -- tag of that slot doesnt exist
-				end
-			end)
+	for slnum1,slot in inventories[player.UserId] do
+		if not Items:FindFirstChild(slot.Tag) then
+			inventories[player.UserId][slnum1] = nil -- tag of that slot doesnt exist
+		end
+		for _,_ in slot do
 			if slot.Tag then
 				local itemVal = Items[slot.Tag]
-				for _,v in ipairs(itemVal:GetChildren()) do
+				for slnum2,v in ipairs(itemVal:GetChildren()) do
 					if table.find(checkedtags,slot.Tag) then
-						inventories[player.UserId][_] = nil -- duplicate slot with another tag
+						inventories[player.UserId][slnum2] = nil -- duplicate slot with another tag
 					end
 					table.insert(checkedtags,slot.Tag)
 					if not table.find({"NameTag","Tag"},v.Name) then
 						pcall(function()
-							inventories[player.UserId][_][v.Name] = v.Value
+							inventories[player.UserId][slnum2][v.Name] = v.Value
 						end)
 					end
 				end

@@ -1,4 +1,4 @@
-local allCooldowns = {}
+
 local Cooldown = {}
 
 function Cooldown.Fire(player,event,timed)

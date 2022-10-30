@@ -222,7 +222,7 @@ Remotes.Gun.Fire.OnServerInvoke = function(player,mousePos,Tag,timeSent)
 		BanSystem.AnticheatBanOnline(player,"026","Player tried to shoot a gun that didn't belong to them")
 	end
 
-	local bullet = ReplicatedStorage.Items.Bullets[ItemValues.BulletType.Value]:Clone()
+	local bullet = ReplicatedStorage.Items.Bullets["Pistol"]:Clone()
 	bullet.Size = Vector3.new(0.1,0.1,0.1)
 	bullet.Transparency = 1
 	

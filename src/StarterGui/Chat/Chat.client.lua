@@ -67,4 +67,7 @@ Remotes.Chat.SendChatMessage.OnClientEvent:Connect(function(playerChat,initialCh
 		AdditionalClone.Message.Text = AdditionalChat
 		AdditionalClone.Parent = Chat
 	end
+	lastTimeInteracted = os.clock()
+	InputMSG.Visible = true
+	Chat.Visible = true
 end)

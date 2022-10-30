@@ -8,7 +8,6 @@ local DM = {}
 DM.Statistics = {}
 DM.CombatLog = {}
 local queue = {}
-local saveLast = nil
 function DM.SendOutQueue()
 	while wait(5) do
 		for key,val in queue do
@@ -72,7 +71,7 @@ end
 function DM.CombatLog.GetAllRecipientData(Recipient)
 	local RData = {}
 	for _,v in CombatLog do
-		for num,CL in v do
+		for _,CL in v do
 			if v.RecipientDetails.ID == Recipient.UserId then
 				table.insert(RData,CL)
 			end
