@@ -157,7 +157,7 @@ function hitHarvestable(player,Object,Tag, ToolUsing)
 				if Object:GetAttribute("Health") then
 					local Damage = ReplicatedStorage.Items[ToolUsing].Damage.Value
 					local newHealth = Object:GetAttribute("Health") - Damage
-
+					print(newHealth,"nh")
 					if newHealth <= 0 then
 						
 						-- drop items, remove
@@ -172,6 +172,7 @@ function hitHarvestable(player,Object,Tag, ToolUsing)
 						Items.Harvestables[Tag]:Destroy()
 						Object:Destroy()
 					else
+						print("snh",newHealth)
 						Object:SetAttribute("Health",newHealth)
 						-- replicate
 						--

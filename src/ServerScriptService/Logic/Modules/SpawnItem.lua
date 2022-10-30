@@ -44,7 +44,7 @@ function SpawnOutline(Item)
 end
 
 function SpawnItem.SpawnBarrelItems(CF)
-	local items = math.random(0,3)
+	local items = math.random(1,2)
 
 	for _=1, items do
 		local Item2Spawn = BarrelChance[math.random(1, #BarrelChance)]
