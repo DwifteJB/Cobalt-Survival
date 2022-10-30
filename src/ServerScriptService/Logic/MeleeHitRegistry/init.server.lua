@@ -6,7 +6,6 @@
 local hitData = {}
 local ThrowData = {}
 
-
 local FSR = require(script.FastCastRedux)
 local cast = FSR.new()
 local castBehaviour = cast.newBehavior()
@@ -41,6 +40,29 @@ local Settings = require(ServerStorage:WaitForChild("Settings"))
 
 local GatherRate = Settings.SpawnSettings.Rate
 
+--preload animations!
+local LoadedAnimations = {}
+
+for _,ViewModel in ReplicatedStorage.ViewModels:GetChildren() do
+	LoadedAnimations[ViewModel.Name] = {}
+	for _,v in ViewModel.ClientAnimations:GetChildren() do
+		if v:IsA("Folder") then
+			for _, d in v:GetChildren() do
+				if d:IsA("Animation") then
+					local Anim = ViewModel:WaitForChild("Humanoid"):LoadAnimation(d)
+					LoadedAnimations[ViewModel.Name][d.Name] = Anim
+				end
+			end
+		end
+
+		if v:IsA("Animation") then
+			local Anim = ViewModel:WaitForChild("Humanoid"):LoadAnimation(v)
+			LoadedAnimations[ViewModel.Name][v.Name] = Anim
+		end
+	end
+end
+print(LoadedAnimations)
+--
 function addStackableToHarvestable(player,name,amtToHarvest)
 	print(amtToHarvest)
 	local FFC = InventoryManager.Player:FindNamedChildren(player,name)
@@ -169,18 +191,23 @@ end
 
 Remotes.Melee.ValidateRaycast.OnServerInvoke = function(player,mouse,Tag)
 	local TagVals = Itms[Tag]
+
 	local itm = InventoryManager.Player.GetTagSlot(player,Tag)
 	local tn = tonumber(itm)
 	if itm == false or tn > 6 then
 		return 1
 	end
 	if TagVals == nil then
-		BanSystem(player,"027","Player tried to use a tool that did not exist in the TagSystem")
+		BanSystem.AnticheatBanOnline(player,"027","Player tried to use a tool that did not exist in the TagSystem")
 	end
 	if TagVals.Owner.Value ~= player.UserId then
-		BanSystem(player,"026","Player tried to use a tool that didn't belong to them")
+		BanSystem.AnticheatBanOnline(player,"026","Player tried to use a tool that didn't belong to them")
 	end
 	local TagName = TagVals.NameTag.Value
+	if LoadedAnimations[TagName] then
+		local ping = player:GetNetworkPing()
+		task.wait(LoadedAnimations[TagName].Fire.Length/1.5/math.clamp(ping*10,1,1.5))
+	end
 	if hitData[player.UserId] == nil then
 		hitData[player.UserId] = {}
 		hitData[player.UserId][TagName] = {

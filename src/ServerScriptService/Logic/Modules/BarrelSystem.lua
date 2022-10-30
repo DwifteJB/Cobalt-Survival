@@ -28,6 +28,7 @@ function Barrel.SpawnBarrelItems(CF)
 end
 
 function Barrel.Hit(Tag,Object,Damage)
+	if Object == nil or Object:GetAttribute("Health") == nil then return end 
     print("hit barrel",Object:GetAttribute("Health"))
     if Object:GetAttribute("Health") or Object:GetAttribute("Health") > 0 then
         local newHealth = Object:GetAttribute("Health") - Damage

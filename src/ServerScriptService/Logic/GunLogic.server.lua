@@ -160,6 +160,7 @@ function onRayHit(cast,result,velocity,bullet)
 		TagHarvest = hit.Parent.Parent:GetAttribute("Tag")
 	end
 	if Instanced and TagHarvest then
+		if Instanced:GetAttribute("Health") == nil or Instanced:GetAttribute("Tag")  == nil then return end
 		Barrel.Hit(TagHarvest,Instanced,bullet.Damage.Value)
 		ReplicatedStorage.Remotes.Core.Hitmarker:FireClient(plrAtcking,false)
 	end

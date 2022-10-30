@@ -60,6 +60,7 @@ local reloading = false
 local QLean = nil
 local ELean = nil
 local MeleeThrow = false
+local Sprinting = false
 
 --
 
@@ -104,6 +105,7 @@ function RenderStepped.CurrentWeapon(delta)
 end
 
 function resetVals()
+	Sprinting = false
 	heldMouse1 = false
 	isToolReady = false
 	isMelee = nil
@@ -304,6 +306,7 @@ end)
 
 ControlsBegan.Sprint.Event:Connect(function()
 	if _G.InInv == false and aiming == false then
+		Sprinting = true
 		local Properties = {FieldOfView = 95}
 		local T = TweenService:Create(workspace.Camera,GeneralTween,Properties)
 		local T2 = TweenService:Create(viewModelOffset,GeneralTween,{Value = CFrame.new(0,-1.6,0)*CFrame.Angles(math.random(12,12.2),0,0)})
@@ -315,7 +318,7 @@ end)
 
 ControlsBegan.MouseButton2.Event:Connect(function()
 	if CurrentWeapon == nil then return; end
-	if ReplicatedStorage.Items[CurrentWeapon.Name].Melee.Value == false and isToolReady == true and _G.InInv == false then
+	if ReplicatedStorage.Items[CurrentWeapon.Name].Melee.Value == false and reloading == false and isToolReady == true and _G.InInv == false then
 		if CurrentWeapon[CurrentWeapon.Name].Aim ~= nil then
 			player.Character.Humanoid.WalkSpeed = 12
 			local PARTS = CurrentWeapon:GetChildren()
@@ -359,6 +362,32 @@ ControlsBegan.Reload.Event:Connect(function()
 			CurrentWeapon[CurrentWeapon.Name].Arrow.Transparency = 1
 			local Idle = CurrentWeapon.Humanoid:LoadAnimation(CurrentWeapon.ClientAnimations.Idle)
 			Idle:Play()
+		end
+
+		--cancel aim if aiming
+
+		if aiming == true then
+			local PARTS = CurrentWeapon:GetChildren()
+			for i=1, #PARTS do
+				if PARTS[i]:IsA("MeshPart") then
+					PARTS[i].Transparency = 0
+				end
+			end
+			local Offset = CFrame.new(0,-1.5,0)
+			local Properties = {FieldOfView = 90}
+
+			local T = TweenService:Create(Camera,GeneralTween,Properties)
+			local Tween = TweenService:Create(viewModelOffset,GeneralTween,{Value=Offset})
+			Tween:Play()
+			T:Play()
+			if QLean == true or ELean == true then
+				local T2 = TweenService:Create(LeanOff,GeneralTween,{Value = CFrame.new(0,0,0)})
+				T2:Play()
+				Remotes.Core.LeanPlayer:InvokeServer(false)
+				QLean = false
+				ELean = false
+			end
+			aiming = false
 		end
 		reloading = true
 		Remotes.Gun.Reload:FireServer(CurrentWeapon:GetAttribute("Tag"))
@@ -477,8 +506,7 @@ ControlsBegan.MouseButton1.Event:Connect(function()
 
 			end
 		end)()
-	end
-	if CurrentWeapon and isToolReady == true and dead == false and _G.InInv == false then
+	elseif CurrentWeapon and isToolReady == true and dead == false and _G.InInv == false then
 		if ReplicatedStorage.Items[CurrentWeapon.Name].Melee.Value == true then
 			if MeleeThrow == true then
 				Remotes.Melee.Throw:InvokeServer(CurrentWeapon:GetAttribute("Tag"),mouse.Hit.Position)
@@ -492,14 +520,15 @@ ControlsBegan.MouseButton1.Event:Connect(function()
 			local itemValues = ReplicatedStorage.Items[CurrentWeapon.Name]
 			local ViewModel = ReplicatedStorage.ViewModels[CurrentWeapon.Name]
 			local Anim = CurrentWeapon.Humanoid:LoadAnimation(ViewModel.ClientAnimations.Fire)
+			SendAnimationToServer("Fire")
 			coroutine.wrap(function()
 				local yes = Remotes.Melee.ValidateRaycast:InvokeServer(player:GetMouse().Hit.Position,CurrentWeapon:GetAttribute("Tag"))
 				if yes == 1 then
 					deEquip()
 				end
 			end)()
-			SendAnimationToServer("Fire")
 			Anim:Play()
+
 			Anim.Stopped:Connect(function()
 				task.wait(itemValues.AnimationsCoolDown.Fire.Value)
 				isToolReady = true
@@ -561,6 +590,7 @@ end)
 
 ControlsEnded.Sprint.Event:Connect(function()
 	if aiming == false then
+		Sprinting = false
 		local Properties = {FieldOfView = 90}
 		local T = TweenService:Create(Camera,GeneralTween,Properties)
 		local T2 = TweenService:Create(viewModelOffset,GeneralTween,{Value = CFrame.new(0,-1.5,0)})
