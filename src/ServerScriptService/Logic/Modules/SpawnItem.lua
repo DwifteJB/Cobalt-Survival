@@ -56,7 +56,7 @@ function SpawnItem.SpawnBarrelItems(CF)
 				print(Item2Spawn)
 				local Tag = SpawnItem.SpawnWeapon("World",Item2Spawn)
 
-				SpawnItem.SpawnDroppedItemWithTag("World",Tag,CF+CFrame.new(0,3,0),false)
+				SpawnItem.SpawnDroppedItemWithTag(Tag,ReplicatedStorage.ViewModels[Item2Spawn][Item2Spawn],CF+Vector3.new(0,3,0),false)
 			end
 		end
 	end
@@ -81,12 +81,12 @@ function SpawnItem.SpawnBarrel(pos,ori)
 	clonedHarvestable.Parent = Barrels
 
 	if clonedHarvestable:IsA("Model") then
-		clonedHarvestable:SetPrimaryPartCFrame(CFrame.new(pos.X+(clonedHarvestable.PrimaryPart.Size.X),pos.Y,pos.Z),Vector3.new(math.clamp(ori.X,-50,50),ori.Y,math.clamp(ori.Z,-50,50)))
+		clonedHarvestable:SetPrimaryPartCFrame(CFrame.new(pos.X,pos.Y+(clonedHarvestable.PrimaryPart.Size.Y/2),pos.Z),Vector3.new(math.clamp(ori.X,-50,50),ori.Y,math.clamp(ori.Z,-50,50)))
 		clonedHarvestable.PrimaryPart.Orientation+=Vector3.new(0,math.random(-180,180),0)
 		clonedHarvestable.Anchored = true
 	else
 		clonedHarvestable.Anchored = true
-		clonedHarvestable.CFrame = CFrame.new(pos.X+(clonedHarvestable.Size.X),pos.Y,pos.Z)
+		clonedHarvestable.CFrame = CFrame.new(pos.X,pos.Y+(clonedHarvestable.Size.Y/2),pos.Z)
 		clonedHarvestable.Orientation+=Vector3.new(math.clamp(ori.X,-50,50),ori.Y,math.clamp(ori.Z,-50,50))
 	end
 
@@ -214,7 +214,7 @@ function SpawnItem.SpawnTree(object,pos:Vector3,ori:Vector3,resourceAmt)
 	clonedHarvestable:SetAttribute("Tag",TagTag)
 
 	clonedHarvestable.Parent = Trees
-	clonedHarvestable:SetPrimaryPartCFrame(CFrame.new(pos.X+(clonedHarvestable.PrimaryPart.Size.X),pos.Y,pos.Z),Vector3.new(math.clamp(ori.X,-50,50),ori.Y,math.clamp(ori.Z,-50,50)))
+	clonedHarvestable:SetPrimaryPartCFrame(CFrame.new(pos.X,pos.Y+(clonedHarvestable.PrimaryPart.Size.Y/2),pos.Z),Vector3.new(math.clamp(ori.X,-50,50),ori.Y,math.clamp(ori.Z,-50,50)))
 	clonedHarvestable.PrimaryPart.Orientation+=Vector3.new(0,math.random(-180,180),0)
 	--,ori+Vector3.new(0,math.random(-180,180),0)))
 	--clonedHarvestable.PrimaryPart.Orientation = Vector3.new(math.clamp(ori.X,-30,30),ori.Y,math.clamp(ori.Z,-30,30))+Vector3.new(0,math.random(-180,180),0) -- Vector3.new(0,math.random(-180,180),0)
