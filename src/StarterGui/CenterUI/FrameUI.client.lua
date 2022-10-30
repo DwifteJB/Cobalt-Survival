@@ -8,6 +8,8 @@ local RunService = game:GetService("RunService")
 local Hit = script.Parent.HitLabel
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local AS = game:GetService("SoundService")
+
+local HealthBar = script.Parent.HealthBar
 local HitMarker = script.Parent.HitMarker
 local HitMarkerHead = script.Parent.HitMarkerHead
 local lkatobj = false
@@ -60,6 +62,16 @@ RunService:BindToRenderStep("MouseHover", Enum.RenderPriority.Camera.Value - 1, 
 	local Target = Mouse.Target
 	if Target == nil then return end
 	local Tag = Target.Parent:FindFirstChild("Tag") or Target:FindFirstChild("Tag")
+	local Health = Target.Parent:GetAttribute("Health") or Target:GetAttribute("Health")
+	local maxHealth = Target.Parent:GetAttribute("maxHealth") or Target:GetAttribute("maxHealth")
+	if (Target and Target.Parent) and Health and maxHealth and getDistance(Target) <= 7 then
+		HealthBar.HealthText.Text = string.format("%s/%s",Health,maxHealth)
+		HealthBar.InnerHealthBar.Size = UDim2.new(Health/maxHealth,0,1,0)
+		HealthBar.Visible = true
+	else
+		HealthBar.Visible = false
+	end
+
 	if (Target and Target.Parent) and Tag ~= nil then
 		if Tag.Parent.Parent.Parent.Name == "Harvestable" then return end
 		if getDistance(Tag.Parent) <= 7 then

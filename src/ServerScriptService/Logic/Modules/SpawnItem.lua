@@ -79,7 +79,7 @@ function SpawnItem.SpawnBarrel(pos,ori)
 	serverStorageTag.Parent = Harvestable
 
 	
-
+	clonedHarvestable:SetAttribute("maxHealth",100)
 	clonedHarvestable:SetAttribute("Health",100)
 
 	local ResourceAmount = Instance.new("IntValue")

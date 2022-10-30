@@ -177,18 +177,38 @@ end
 
 function ContainerUpdate(storageTag)
 	local PlayerIds = ActionTracker:PlayersInActionWithKey("Container",tonumber(storageTag))
+
+	--
+	local container = InventoryManager.Storage.Exists(tostring(storageTag))
+	local data = {}
+	local Settings = InventoryManager.Storage.GetSettings(tostring(storageTag))
+	local d =InventoryManager.Storage.GetExtraData(Storage,"Equipment")
+	if Settings.isLocked == true then return end
+	if Settings.PlayerDroppedBag == true then
+		data["Type"]="PlayerBag"
+		data["Equipment"]=d or {}
+	else
+		data["Type"]=nil
+	end
+	local sltM = InventoryManager.Storage.GetSlotAmt(tostring(storageTag))
+	pcall(function()
+		container.Settings = nil
+	end)
+	data["ContainerName"]=Links[storageTag].Value.Name
+	data["Values"]=container
+	data["SlotAmount"]=sltM
+
+	--
 	for _,v in PlayerIds do
 		pcall(function()
-			local container = InventoryManager.Storage.Exists(tostring(storageTag))
-			local sltM = InventoryManager.Storage.GetSlotAmt(tostring(storageTag))
-			local data = {["ContainerName"]=Links[storageTag].Value.Name,["Values"]=container,["SlotAmount"]=sltM}
-			Remotes.Inventory.UpdateContents:FireClient(Players:GetPlayerByUserId(v),data)
+			local player = Players:GetPlayerByUserId(v)
+			Remotes.Inventory.UpdateContents:FireClient(player,data)
 		end)
 	end
 	local CSettings = InventoryManager.Storage.GetSettings(storageTag)
-	local Items = InventoryManager.Storage.GetAllItemsFromStorage(storageTag)
+	local itms = InventoryManager.Storage.GetAllItemsFromStorage(storageTag)
 	local c = 0
-	for _,_ in Items do
+	for _,_ in itms do
 		c+=1
 
 	end
@@ -198,7 +218,6 @@ function ContainerUpdate(storageTag)
 				-- remove
 				if Links[storageTag] then
 					Links[storageTag].Value:Destroy()
-					local PlayerIds = ActionTracker:PlayersInActionWithKey("Container",tonumber(storageTag))
 					for _,v in PlayerIds do
 						pcall(function()
 							ActionTracker.ChangePlayerAction(Players:GetPlayerByUserId(v),{["Main"]="Inventory"})
@@ -428,6 +447,14 @@ ReplicatedStorage.Remotes.Inventory.InteractionSystem.OnServerInvoke = function(
 		if tonumber(slot) <= 6 then
 			Remotes.ItemSystem.RegisterHotbarItems:FireClient(player,Inv)
 		end
+		local Quantity
+		if Items[Tag]:FindFirstChild("Quantity") then
+			Quantity = Items[Tag]:FindFirstChild("Quantity").Value
+		else
+			Quantity = 1
+		end
+		-- send item
+		Remotes.Core.ItemAdded:FireClient(player,Items[Tag].NameTag.Value,Quantity)
 		return 69
 
 	end
