@@ -24,9 +24,9 @@ local BanSystem = require(script.Parent:WaitForChild("Modules"):WaitForChild("Ba
 local InventoryManager = require(script.Parent:WaitForChild("Modules"):WaitForChild("InventoryManager"))
 local DamageSystem = require(script.Parent:WaitForChild("Modules"):WaitForChild("DamageSystem"))
 local SpawnItem = require(script.Parent:WaitForChild("Modules"):WaitForChild("SpawnItem"))
+local Barrel = require(script.Parent:WaitForChild("Modules"):WaitForChild("BarrelSystem"))
 
 local Items = ServerStorage:WaitForChild("Tags")
-local Harvestables = Items:WaitForChild("Harvestables")
 local Itms = Items:WaitForChild("Items")
 
 local Players = game:GetService("Players")
@@ -153,34 +153,7 @@ function hitHarvestable(player,Object,Tag, ToolUsing)
 				end
 
 			elseif typeOfHarvestable.Value == 2 and ReplicatedStorage.Items[ToolUsing]:FindFirstChild("Damage") then
-				print("hit barrel",Object:GetAttribute("Health"))
-				if Object:GetAttribute("Health") then
-					local Damage = ReplicatedStorage.Items[ToolUsing].Damage.Value
-					local newHealth = Object:GetAttribute("Health") - Damage
-					print(newHealth,"nh")
-					if newHealth <= 0 then
-						
-						-- drop items, remove
-						local CF
-						if Object:IsA("Model") then
-							CF = Object.PrimaryPart.CFrame
-						else
-							CF = Object.CFrame
-						end
-						SpawnItem.SpawnBarrelItems(CF)
-
-						Items.Harvestables[Tag]:Destroy()
-						Object:Destroy()
-					else
-						print("snh",newHealth)
-						Object:SetAttribute("Health",newHealth)
-						-- replicate
-						--
-					end
-				else
-					Items.Harvestables[Tag]:Destroy()
-					Object:Destroy()
-				end
+				Barrel.Hit(Tag,Object,ReplicatedStorage.Items[ToolUsing].Damage.Value)
 			end
 		else
 			-- Code 004

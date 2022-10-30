@@ -22,7 +22,6 @@ Barrels.Parent = Hrvst
 
 local TagSystem = require(script.Parent:WaitForChild("TagSystem"))
 
-local BarrelChance = {"AK47","Axe"}
 
 --[[
 	How does the tag system work?
@@ -43,24 +42,7 @@ function SpawnOutline(Item)
 	OutlineClone.Parent = Item
 end
 
-function SpawnItem.SpawnBarrelItems(CF)
-	local items = math.random(1,2)
 
-	for _=1, items do
-		local Item2Spawn = BarrelChance[math.random(1, #BarrelChance)]
-
-		local ItemRep = ReplicatedStorage.Items[Item2Spawn]
-
-		if ItemRep:FindFirstChild("Tool") then
-			if ItemRep:FindFirstChild("Tool").Value == true then
-				print(Item2Spawn)
-				local Tag = SpawnItem.SpawnWeapon("World",Item2Spawn)
-
-				SpawnItem.SpawnDroppedItemWithTag(Tag,ReplicatedStorage.ViewModels[Item2Spawn][Item2Spawn],CF+Vector3.new(0,3,0),false)
-			end
-		end
-	end
-end
 
 function SpawnItem.SpawnStorage(Item,storageTag)
 	local tag = Instance.new("IntValue")

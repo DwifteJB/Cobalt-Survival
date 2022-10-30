@@ -14,9 +14,9 @@ local Datastore = game:GetService("DataStoreService")
 local BanSystem = require(script.Parent:WaitForChild("Modules"):WaitForChild("BanSystem"))
 
 local BanStore = Datastore:GetDataStore("BanStore")
-local Players = game:GetService("Players")
+
 local PlayerEvents = script.Parent.PlayerEvents
-local TagSystem = require(script.Parent:WaitForChild("Modules"):WaitForChild("TagSystem"))
+
 local RunService = game:GetService("RunService")
 local lighting = game:GetService("Lighting")
 local ClientSideOn = {}
@@ -31,7 +31,7 @@ end
 
 PlayerEvents.CharacterAdded.Event:Connect(function(player,character)
 	ClientSideOn[player.UserId] = {}
-	if player:GetRankInGroup(15771966) <= 3 then
+	if player:GetRankInGroup(15771966) <= 2 then
 		warnings[player.Name] = {}
 		local partsDet = {}
 		local parts = player.Character:GetChildren()
