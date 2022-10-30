@@ -152,8 +152,34 @@ function hitHarvestable(player,Object,Tag, ToolUsing)
 					return true
 				end
 
-			elseif typeOfHarvestable.Value == 2 then
-				print("hit barrel")
+			elseif typeOfHarvestable.Value == 2 and ReplicatedStorage.Items[ToolUsing]:FindFirstChild("Damage") then
+				print("hit barrel",Object:GetAttribute("Health"))
+				if Object:GetAttribute("Health") then
+					local Damage = ReplicatedStorage.Items[ToolUsing].Damage.Value
+					local newHealth = Object:GetAttribute("Health") - Damage
+
+					if newHealth <= 0 then
+						
+						-- drop items, remove
+						local CF
+						if Object:IsA("Model") then
+							CF = Object.PrimaryPart.CFrame
+						else
+							CF = Object.CFrame
+						end
+						SpawnItem.SpawnBarrelItems(CF)
+
+						Items.Harvestables[Tag]:Destroy()
+						Object:Destroy()
+					else
+						Object:SetAttribute("Health",newHealth)
+						-- replicate
+						--
+					end
+				else
+					Items.Harvestables[Tag]:Destroy()
+					Object:Destroy()
+				end
 			end
 		else
 			-- Code 004
