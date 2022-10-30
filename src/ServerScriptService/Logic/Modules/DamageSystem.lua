@@ -2,13 +2,10 @@
 
 local ServerStorage = game:GetService("ServerStorage")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Tags = ServerStorage:WaitForChild("Tags")
 local TagSystem = require(script.Parent:WaitForChild("TagSystem"))
 local DataManager = require(script.Parent:WaitForChild("DataManager"))
-local TypesOfEquippables = {"Head","Torso","Feet","Legs"}
 local Webhook = "https://hooks.hyra.io/api/webhooks/1012512294514724904/zVe8JgXkylqoHyZCgxMnFdSRHZMYRAykZqeN2H0gTtrgFNSzfdEKldsCkIekFDWbT3yk"
 local HTTPService = game:GetService("HttpService")
-local players = game:GetService("Players")
 local queue = {}
 
 
@@ -116,7 +113,7 @@ function DS.Log2DS(playerAttacking,playerAttacked,partShot,damage,toolUsed)
 	}
 	local finalEmbed = HTTPService:JSONEncode(embed)
 	local amount= 0
-	for i,v in pairs(queue) do
+	for _,_ in pairs(queue) do
 		amount+=1
 	end
 	queue[amount] = finalEmbed

@@ -154,6 +154,7 @@ function hitHarvestable(player,Object,Tag, ToolUsing)
 
 			elseif typeOfHarvestable.Value == 2 and ReplicatedStorage.Items[ToolUsing]:FindFirstChild("Damage") then
 				Barrel.Hit(Tag,Object,ReplicatedStorage.Items[ToolUsing].Damage.Value)
+				ReplicatedStorage.Remotes.Core.Hitmarker:FireClient(player,false)
 			end
 		else
 			-- Code 004

@@ -145,6 +145,7 @@ function onRayHit(cast,result,velocity,bullet)
 	end
 	if Instanced and TagHarvest then
 		Barrel.Hit(TagHarvest,Instanced,bullet.Damage.Value)
+		ReplicatedStorage.Remotes.Core.Hitmarker:FireClient(plrAtcking,false)
 	end
 	--#endregion
 	BulletData[plrAtcking.UserId][bullet.BC.Value]["CFrame"]=hit.CFrame
