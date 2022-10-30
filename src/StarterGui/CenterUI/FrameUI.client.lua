@@ -4,7 +4,6 @@ local TweenService =game:GetService("TweenService")
 local TweenOut = TweenInfo.new(0.09,Enum.EasingStyle.Sine,Enum.EasingDirection.Out)
 
 local Mouse = Player:GetMouse()
-local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Hit = script.Parent.HitLabel
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -16,9 +15,8 @@ local OutlineCopy = nil
 local Action = script.Parent.action
 local ActionImage = script.Parent.actionImage
 
-local InventoryOpen = false
 
-function getDistance(Player,Object)
+function getDistance(Object)
 	if Object:IsA("Model") then
 		return (Object.PrimaryPart.Position - Player.Character.LowerTorso.Position).Magnitude
 	else
@@ -53,6 +51,7 @@ ReplicatedStorage.Remotes.Core.Hitmarker.OnClientEvent:Connect(function(head)
 end)
 
 RunService:BindToRenderStep("MouseHover", Enum.RenderPriority.Camera.Value - 1, function()
+	if not Player.Character or not Player.Character:FindFirstChild("HumanoidRootPart") then return end
 	if lkatobj == false and OutlineCopy ~= nil then
 		OutlineCopy.Visible = false
 		OutlineCopy = nil
@@ -63,7 +62,7 @@ RunService:BindToRenderStep("MouseHover", Enum.RenderPriority.Camera.Value - 1, 
 	local Tag = Target.Parent:FindFirstChild("Tag") or Target:FindFirstChild("Tag")
 	if (Target and Target.Parent) and Tag ~= nil then
 		if Tag.Parent.Parent.Parent.Name == "Harvestable" then return end
-		if getDistance(Player,Tag.Parent) <= 7 then
+		if getDistance(Tag.Parent) <= 7 then
 			-- we are dealing with an enemy stand user!
 			if _G.InInv == true then return end 
 			if Tag.Parent.Name ~= "Harvestable" then
@@ -73,7 +72,7 @@ RunService:BindToRenderStep("MouseHover", Enum.RenderPriority.Camera.Value - 1, 
 					OutlineCopy = Target.Outline
 				end
 				Action.Visible = true
-				Action.Text = string.format("Press F to Open")
+				Action.Text = "Press F to Open"
 				ActionImage.Visible = true
 			end
 		else
@@ -87,3 +86,4 @@ RunService:BindToRenderStep("MouseHover", Enum.RenderPriority.Camera.Value - 1, 
 		ActionImage.Visible = false
 	end
 end)
+

@@ -63,7 +63,7 @@ function waitToClose(uiElement)
 	uiElement:Destroy()
 end
 
-function addItem(itemName,itemAmount,itemImage)
+function addItem(itemName,itemAmount)
 	local Item = ItemContainer:Clone()
 	Item.ITEM_NAME.Text = itemName
 	Item.ITEM_AMOUNT.Text = string.format("X%s",tostring(itemAmount))
@@ -72,8 +72,8 @@ function addItem(itemName,itemAmount,itemImage)
 	return coroutine.wrap(waitToClose)(Item)
 end
 
-Remotes.Core.ItemAdded.OnClientEvent:Connect(function(itemname,itemamount,itemimage)
-	addItem(itemname,itemamount,itemimage)
+Remotes.Core.ItemAdded.OnClientEvent:Connect(function(itemname,itemamount)
+	addItem(itemname,itemamount)
 end)
 coroutine.wrap(function()
 	while task.wait(1) do

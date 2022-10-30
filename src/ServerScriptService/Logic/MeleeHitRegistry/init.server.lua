@@ -95,11 +95,19 @@ function addStackableToHarvestable(player,name,amtToHarvest)
 end
 
 function hitHarvestable(player,Object,Tag, ToolUsing)
-	if Object.Tag.Value == Tag then
-		if (player.Character.HumanoidRootPart.Position - Object.PrimaryPart.Position).magnitude < 10 then
-			local resourceAmt = Items.Harvestables[Tag].ResourceAmount
-			local typeOfHarvestable = Items.Harvestables[Tag].Type
-			if typeOfHarvestable.Value == 0 then
+	if Object:GetAttribute("Tag") == Tag then
+		--pos
+		local pos
+		if Object:IsA("Model") then
+			pos = (player.Character.HumanoidRootPart.Position - Object.PrimaryPart.Position).magnitude
+		else
+			pos = (player.Character.HumanoidRootPart.Position - Object.Position).magnitude
+		end
+
+		if pos < 10 then
+			local resourceAmt = Items.Harvestables[Tag]:FindFirstChild("ResourceAmount") or nil
+			local typeOfHarvestable = Items.Harvestables[Tag].Type or nil
+			if typeOfHarvestable.Value == 0 and ReplicatedStorage.Items[ToolUsing].Gather.Value == true then
 				local harvestMultiplier = ItemSettings[ToolUsing].WoodRate
 				local amtToHarvest = (50 * harvestMultiplier.Value) * GatherRate
 				if harvestMultiplier.Value == 0 then return false end 
@@ -120,7 +128,7 @@ function hitHarvestable(player,Object,Tag, ToolUsing)
 					print("Wood left in tree:", resourceAmt.Value)
 					return true
 				end
-			elseif typeOfHarvestable.Value == 1 then
+			elseif typeOfHarvestable.Value == 1 and ReplicatedStorage.Items[ToolUsing].Gather.Value == true then
 				local harvestMultiplier = ItemSettings[ToolUsing].OreRate
 				local amtToHarvest = 50 * harvestMultiplier.Value
 				if harvestMultiplier == 0 then return false end 
@@ -144,6 +152,8 @@ function hitHarvestable(player,Object,Tag, ToolUsing)
 					return true
 				end
 
+			elseif typeOfHarvestable.Value == 2 then
+				print("hit barrel")
 			end
 		else
 			-- Code 004
@@ -203,17 +213,22 @@ Remotes.Melee.ValidateRaycast.OnServerInvoke = function(player,mouse,Tag)
 				else
 					DamageSystem.DamageNPC(player,character:FindFirstChild("Humanoid"),ray.Instance,itemValues.Damage.Value)
 				end
-			elseif itemValues.Gather.Value == true then
-				if ray.Instance.Parent:FindFirstChild("Tag") then
-					--pcall(function()
-					if Harvestables[ray.Instance.Parent.Tag.Value]:FindFirstChild("Type") then
-						hitHarvestable(player,ray.Instance.Parent,ray.Instance.Parent.Tag.Value,TagName)
-					end
-					--end)
-				elseif ray.Instance.Parent.Parent:FindFirstChild("Tag") then
-					if Harvestables[ray.Instance.Parent.Parent.Tag.Value]:FindFirstChild("Type") then
-						hitHarvestable(player,ray.Instance.Parent.Parent,ray.Instance.Parent.Parent.Tag.Value,TagName)
-					end
+			else
+				local Instanced
+				local TagHarvest
+				if ray.Instance.Parent:GetAttribute("Tag") then
+					Instanced = ray.Instance.Parent
+					TagHarvest = ray.Instance.Parent:GetAttribute("Tag")
+				elseif ray.Instance:GetAttribute("Tag") then
+					Instanced = ray.Instance
+					TagHarvest = ray.Instance:GetAttribute("Tag")
+				elseif ray.Instance.Parent.Parent:GetAttribute("Tag") then
+					Instanced = ray.Instance.Parent.Parent
+					TagHarvest = ray.Instance.Parent.Parent:GetAttribute("Tag")
+				end
+				print(Instanced,TagHarvest)
+				if TagHarvest and Instanced then
+					hitHarvestable(player,Instanced,TagHarvest,TagName)
 				end
 			end
 		end
@@ -360,8 +375,7 @@ function onRayHit(cast,result,velocity,bullet)
 	local bulletLength = bullet.Size.Z/2
 	local offset = CFrame.new(0,0,-bulletLength)
 	if hit ~= workspace.Terrain then
-		print(CFrame.lookAt(hit.Position-(hit.Position-bullet.Position),bullet.Rotation))
-		local Item = SpawnItem.SpawnDroppedItemWithTag(bullet.Tag.Value,ReplicatedStorage.ViewModels[bullet.ModelName.Value][bullet.ModelName.Value],bullet.CFrame,true)
+		SpawnItem.SpawnDroppedItemWithTag(bullet.Tag.Value,ReplicatedStorage.ViewModels[bullet.ModelName.Value][bullet.ModelName.Value],bullet.CFrame,true)
 		--[[local Link = Instance.new("Weld")
 		Link.Name = "Link"
 		Link.Part0=hit

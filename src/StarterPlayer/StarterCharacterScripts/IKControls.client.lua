@@ -1,3 +1,4 @@
+local RunService = game:GetService("RunService")
 --[[
 	Client Version of IKController, makes it seem smoother for the player.
 	written by dwifte
@@ -7,10 +8,7 @@
 local Char = script.Parent
 local Humanoid = Char:WaitForChild("Humanoid")
 
-Humanoid.Died:Connect(function()
-	Humanoid.LeftLegClient:Destroy()
-	Humanoid.RightLegClient:Destroy()
-end)
+
 
 local IKController = workspace:WaitForChild("IKControllers")
 local Client = IKController:FindFirstChild("Client") or Instance.new("Folder")
@@ -64,7 +62,7 @@ params.FilterDescendantsInstances = {Char,IKController,workspace.CurrentCamera} 
 Char:WaitForChild("Humanoid"):WaitForChild("LeftLeg").Enabled = false
 Char:WaitForChild("Humanoid"):WaitForChild("RightLeg").Enabled = false
 
-RunService.RenderStepped:Connect(function()
+local Connection = RunService.RenderStepped:Connect(function()
 	local LeftRay = workspace:Raycast(Vector3.new(Char.LeftFoot.Position.X,Char.LeftFoot.Position.Y,Char.LeftFoot.Position.Z),Vector3.new(0,-1,0)*50,params)
 	if LeftRay then
 		LeftIKObj.CFrame = CFrame.new(LeftRay.Position,LeftRay.Normal)
@@ -73,4 +71,10 @@ RunService.RenderStepped:Connect(function()
 	if RightRay then
 		RightIKObj.CFrame = CFrame.new(RightRay.Position,RightRay.Normal)
 	end
+end)
+
+Humanoid.Died:Connect(function()
+	Humanoid.LeftLegClient:Destroy()
+	Humanoid.RightLegClient:Destroy()
+	Connection:Disconnect()
 end)

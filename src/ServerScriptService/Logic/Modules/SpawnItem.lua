@@ -16,8 +16,13 @@ local Ores = Instance.new("Folder")
 Ores.Name = "Ores"
 Ores.Parent = Hrvst
 
+local Barrels = Instance.new("Folder")
+Barrels.Name = "Barrels"
+Barrels.Parent = Hrvst
 
 local TagSystem = require(script.Parent:WaitForChild("TagSystem"))
+
+local BarrelChance = {"AK47","Axe"}
 
 --[[
 	How does the tag system work?
@@ -38,6 +43,25 @@ function SpawnOutline(Item)
 	OutlineClone.Parent = Item
 end
 
+function SpawnItem.SpawnBarrelItems(CF)
+	local items = math.random(0,3)
+
+	for _=1, items do
+		local Item2Spawn = BarrelChance[math.random(1, #BarrelChance)]
+
+		local ItemRep = ReplicatedStorage.Items[Item2Spawn]
+
+		if ItemRep:FindFirstChild("Tool") then
+			if ItemRep:FindFirstChild("Tool").Value == true then
+				print(Item2Spawn)
+				local Tag = SpawnItem.SpawnWeapon("World",Item2Spawn)
+
+				SpawnItem.SpawnDroppedItemWithTag("World",Tag,CF+CFrame.new(0,3,0),false)
+			end
+		end
+	end
+end
+
 function SpawnItem.SpawnStorage(Item,storageTag)
 	local tag = Instance.new("IntValue")
 	tag.Value = storageTag
@@ -47,6 +71,50 @@ function SpawnItem.SpawnStorage(Item,storageTag)
 
 end
 
+function SpawnItem.SpawnBarrel(pos,ori)
+	local object = ReplicatedStorage.Harvestables.Barrel
+	local TagTag = TagSystem.CreateNewHarvestableTag()
+	local clonedHarvestable = object:Clone()
+
+	clonedHarvestable:SetAttribute("Tag",TagTag)
+
+	clonedHarvestable.Parent = Barrels
+
+	if clonedHarvestable:IsA("Model") then
+		clonedHarvestable:SetPrimaryPartCFrame(CFrame.new(pos.X+(clonedHarvestable.PrimaryPart.Size.X),pos.Y,pos.Z),Vector3.new(math.clamp(ori.X,-50,50),ori.Y,math.clamp(ori.Z,-50,50)))
+		clonedHarvestable.PrimaryPart.Orientation+=Vector3.new(0,math.random(-180,180),0)
+		clonedHarvestable.Anchored = true
+	else
+		clonedHarvestable.Anchored = true
+		clonedHarvestable.CFrame = CFrame.new(pos.X+(clonedHarvestable.Size.X),pos.Y,pos.Z)
+		clonedHarvestable.Orientation+=Vector3.new(math.clamp(ori.X,-50,50),ori.Y,math.clamp(ori.Z,-50,50))
+	end
+
+	--,ori+Vector3.new(0,math.random(-180,180),0)))
+	--clonedHarvestable.PrimaryPart.Orientation = Vector3.new(math.clamp(ori.X,-30,30),ori.Y,math.clamp(ori.Z,-30,30))+Vector3.new(0,math.random(-180,180),0) -- Vector3.new(0,math.random(-180,180),0)
+	local serverStorageTag = Instance.new("Folder")
+	serverStorageTag.Name = TagTag
+	serverStorageTag.Parent = Harvestable
+
+
+	local Health = Instance.new("IntValue")
+	Health.Name = "Health"
+	Health.Value = 100
+	Health.Parent = serverStorageTag
+
+	clonedHarvestable:SetAttribute("Health",Health.Value)
+
+	local ResourceAmount = Instance.new("IntValue")
+	ResourceAmount.Name = "B_Type"
+	ResourceAmount.Value = 0 -- scrap
+	ResourceAmount.Parent = serverStorageTag
+
+	local daType = Instance.new("IntValue")
+	daType.Name = "Type"
+	daType.Value = 2
+	daType.Parent = serverStorageTag
+end
+
 function SpawnItem.SpawnStackable(player,Item,Amount)
 	local itmVals = ReplicatedStorage.Items.Stackables[Item]
 	if itmVals then
@@ -54,10 +122,16 @@ function SpawnItem.SpawnStackable(player,Item,Amount)
 		local tagFld = Instance.new("Folder")
 		tagFld.Name = tag
 		tagFld.Parent = Items
-
+		
+		local UserId
+		if player == "World" then
+			UserId = 0
+		else
+			UserId = player.UserId
+		end
 		local OwnerVal = Instance.new("IntValue")
 		OwnerVal.Name = "Owner"
-		OwnerVal.Value = player.UserId
+		OwnerVal.Value = UserId
 		OwnerVal.Parent = tagFld
 
 		local NameTag = Instance.new("StringValue")
@@ -82,9 +156,9 @@ function SpawnItem.SpawnWeapon(player,weaponName)
 	if itemVals then
 		if itemVals:FindFirstChild("Melee") and itemVals.Melee.Value == false then
 			-- spawn as gun
-			local srvStorageVals = ReplicatedStorage.Items[weaponName]
-			if srvStorageVals then
-				local maxMagVal = srvStorageVals.MagazineValue:Clone()
+			local RepStorageVals = ReplicatedStorage.Items[weaponName]
+			if RepStorageVals then
+				local maxMagVal = RepStorageVals.MagazineValue:Clone()
 				local tag = TagSystem.CreateNewItemTag()
 				
 				local tagFld = Instance.new("Folder")
@@ -109,6 +183,7 @@ function SpawnItem.SpawnWeapon(player,weaponName)
 				NameTag.Parent = tagFld
 
 				maxMagVal.Name = "Magazine"
+				maxMagVal.Value = math.floor(math.random(1,RepStorageVals.MagazineValue.Value))
 				maxMagVal.Parent = tagFld
 
 				return tag
@@ -140,11 +215,7 @@ function SpawnItem.SpawnTree(object,pos:Vector3,ori:Vector3,resourceAmt)
 	local TagTag = TagSystem.CreateNewHarvestableTag()
 	local clonedHarvestable = object:Clone()
 
-
-	local tag = Instance.new("IntValue")
-	tag.Value = TagTag
-	tag.Name = "Tag"
-	tag.Parent = clonedHarvestable
+	clonedHarvestable:SetAttribute("Tag",TagTag)
 
 	clonedHarvestable.Parent = Trees
 	clonedHarvestable:SetPrimaryPartCFrame(CFrame.new(pos.X+(clonedHarvestable.PrimaryPart.Size.X),pos.Y,pos.Z),Vector3.new(math.clamp(ori.X,-50,50),ori.Y,math.clamp(ori.Z,-50,50)))
@@ -170,21 +241,19 @@ function SpawnItem.SpawnNode(object,pos:Vector3,resourceAmt)
 	local TagTag = TagSystem.CreateNewHarvestableTag()
 	local clonedHarvestable = object:Clone()
 
-
-	local tag = Instance.new("IntValue")
-	tag.Value = TagTag
-	tag.Name = "Tag"
-	tag.Parent = clonedHarvestable
+	clonedHarvestable:SetAttribute("Tag",TagTag)
 
 	clonedHarvestable.Parent = Ores
 	clonedHarvestable:SetPrimaryPartCFrame(CFrame.new(pos)) -- Vector3.new(0,math.random(-180,180),0)
 	local serverStorageTag = Instance.new("Folder")
 	serverStorageTag.Name = TagTag
 	serverStorageTag.Parent = Harvestable
+
 	local ResourceAmount = Instance.new("IntValue")
 	ResourceAmount.Name = "ResourceAmount"
 	ResourceAmount.Value = resourceAmt
 	ResourceAmount.Parent = serverStorageTag
+
 	local daType = Instance.new("IntValue")
 	daType.Name = "Type"
 	daType.Value = 1

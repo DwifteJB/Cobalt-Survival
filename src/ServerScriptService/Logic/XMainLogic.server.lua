@@ -124,7 +124,6 @@ Remotes.Core.PlayAnimation.OnServerEvent:Connect(function(player,animation,Tag)
 		StopAnimation(player.Character.Humanoid)
 		return
 	end
-	print(animation,Tag)
 	local Weapon = Items[Tag]
 	if Weapon ~= nil then
 		if player.Character.RightHand:FindFirstChild("ToolMotor6D") ~= nil then

@@ -137,7 +137,7 @@ function SendAnimationToServer(animlol,forceTag)
 		Remotes.Core.PlayAnimation:FireServer(animlol)
 	else
 		if not forceTag then
-			forceTag = CurrentWeapon:WaitForChild("Tag").Value
+			forceTag = CurrentWeapon:GetAttribute("Tag")
 		end
 		Remotes.Core.PlayAnimation:FireServer(animlol,forceTag)
 	
@@ -182,10 +182,7 @@ function EquipItem(KeyCode)
 			isMelee = false
 		end
 
-		local tagVal = CurrentWeapon:FindFirstChild("Tag") or Instance.new("IntValue")
-		tagVal.Name = "Tag"
-		tagVal.Value = tag
-		tagVal.Parent = CurrentWeapon
+		CurrentWeapon:SetAttribute("Tag",tag)
 
 		CurrentWeapon.PrimaryPart.Anchored = true
 		General.CanCollide(CurrentWeapon, false)
@@ -243,7 +240,7 @@ end)
 
 Remotes.Client.Inventory.getEquippedItem.OnInvoke = function()
 	if CurrentWeapon then
-		return CurrentWeapon.Tag.Value
+		return CurrentWeapon:GetAttribute("Tag")
 	else
 		return false
 	end
@@ -347,7 +344,7 @@ ControlsBegan.MouseButton2.Event:Connect(function()
 		Tween:Play()
 		T:Play()
 		Tween.Completed:Wait()
-		Remotes.Melee.prepareThrow:InvokeServer(CurrentWeapon.Tag.Value,true)
+		Remotes.Melee.prepareThrow:InvokeServer(CurrentWeapon:GetAttribute("Tag"),true)
 		MeleeThrow = true
 
 	end
@@ -356,7 +353,7 @@ end)
 ControlsBegan.Reload.Event:Connect(function()
 	if not CurrentWeapon or isToolReady == false and _G.InInv == true then return; end
 	if dead == true then return; end
-	local LocalBulletVal = Remotes.Client.UI.GetItemCapacity:Invoke(CurrentWeapon.Tag.Value)
+	local LocalBulletVal = Remotes.Client.UI.GetItemCapacity:Invoke(CurrentWeapon:GetAttribute("Tag"))
 	if tonumber(LocalBulletVal) == ReplicatedStorage.Items[CurrentWeapon.Name].MagazineValue.Value then return end
 	if ReplicatedStorage.Items[CurrentWeapon.Name].Melee.Value == false then
 		if CurrentWeapon.Name == "Crossbow" then
@@ -366,7 +363,7 @@ ControlsBegan.Reload.Event:Connect(function()
 		end
 		reloading = true
 		isToolReady = false
-		Remotes.Gun.Reload:FireServer(CurrentWeapon.Tag.Value)
+		Remotes.Gun.Reload:FireServer(CurrentWeapon:GetAttribute("Tag"))
 		local ReloadAnim = CurrentWeapon.Humanoid:LoadAnimation(CurrentWeapon.ClientAnimations.Reload)
 		SendAnimationToServer("Reload")
 		General.StopAnimation(CurrentWeapon.Humanoid)
@@ -404,7 +401,7 @@ ControlsBegan.MouseButton1.Event:Connect(function()
 	if ReplicatedStorage.Items[CurrentWeapon.Name].Melee.Value == false and ReplicatedStorage.Items[CurrentWeapon.Name]:FindFirstChild("Recoil") and _G.InInv == false then
 		heldMouse1 = true
 		local repItems = ReplicatedStorage.Items[CurrentWeapon.Name]
-		local magAmt = Remotes.Client.UI.GetItemCapacity:Invoke(CurrentWeapon.Tag.Value)
+		local magAmt = Remotes.Client.UI.GetItemCapacity:Invoke(CurrentWeapon:GetAttribute("Tag"))
 		if tonumber(magAmt) <= 0 then
 			heldMouse1 = false
 			return
@@ -425,7 +422,7 @@ ControlsBegan.MouseButton1.Event:Connect(function()
 					end
 				end
 				coroutine.wrap(function()
-					local magAmt = Remotes.Gun.getAmmo:InvokeServer(CurrentWeapon.Tag.Value)
+					local magAmt = Remotes.Gun.getAmmo:InvokeServer(CurrentWeapon:GetAttribute("Tag"))
 					if magAmt <= 0 then
 						heldMouse1 = false
 						return
@@ -444,7 +441,7 @@ ControlsBegan.MouseButton1.Event:Connect(function()
 						CSShoot.Fire(mouse.Hit.Position,CurrentWeapon,startD,CurrentWeapon.Name)
 					end)()
 					coroutine.wrap(function()
-						local firVal = Remotes.Gun.Fire:InvokeServer(mouse.Hit.Position,CurrentWeapon.Tag.Value,startD)
+						local firVal = Remotes.Gun.Fire:InvokeServer(mouse.Hit.Position,CurrentWeapon:GetAttribute("Tag"),startD)
 						if firVal[1] == 0 or firVal[1] == 1 then
 							lastResponse = os.clock()
 						elseif firVal[1] == 4 then
@@ -483,7 +480,7 @@ ControlsBegan.MouseButton1.Event:Connect(function()
 	if CurrentWeapon and isToolReady == true and dead == false and _G.InInv == false then
 		if ReplicatedStorage.Items[CurrentWeapon.Name].Melee.Value == true then
 			if MeleeThrow == true then
-				Remotes.Melee.Throw:InvokeServer(CurrentWeapon.Tag.Value,mouse.Hit.Position)
+				Remotes.Melee.Throw:InvokeServer(CurrentWeapon:GetAttribute("Tag"),mouse.Hit.Position)
 				deEquip()
 				Remotes.Client.UI.ShowCenter:Fire(false)
 				MeleeThrow = false
@@ -495,7 +492,7 @@ ControlsBegan.MouseButton1.Event:Connect(function()
 			local ViewModel = ReplicatedStorage.ViewModels[CurrentWeapon.Name]
 			local Anim = CurrentWeapon.Humanoid:LoadAnimation(ViewModel.ClientAnimations.Fire)
 			coroutine.wrap(function()
-				local yes = Remotes.Melee.ValidateRaycast:InvokeServer(player:GetMouse().Hit.Position,CurrentWeapon.Tag.Value)
+				local yes = Remotes.Melee.ValidateRaycast:InvokeServer(player:GetMouse().Hit.Position,CurrentWeapon:GetAttribute("Tag"))
 				if yes == 1 then
 					deEquip()
 				end
@@ -547,7 +544,7 @@ ControlsEnded.MouseButton2.Event:Connect(function()
 			end
 		else
 			-- melee weapons! :)
-			Remotes.Melee.prepareThrow:InvokeServer(CurrentWeapon.Tag.Value,false)
+			Remotes.Melee.prepareThrow:InvokeServer(CurrentWeapon:GetAttribute("Tag"),false)
 			Remotes.Client.UI.ShowCenter:Fire(false)
 			MeleeThrow = false
 			aiming = false

@@ -55,7 +55,27 @@ function spawnAirdrop()
 	end
 end
 
-
+function BarrelSpawner() 
+	for i=1, 200 do -- 200 barrels. test spawning
+		if count >= timeout then
+			RunService.Heartbeat:Wait()
+			count=0
+		end
+		count+=1
+		local rand_x = math.random()*map_x - map_x/2
+		local rand_z = math.random()*map_z - map_z/2
+	
+		local raycastPos = Vector3.new(rand_x,max_height,rand_z)
+	
+		local ray = Ray.new(raycastPos,Vector3.new(0,-1,0)*300)
+		local instance,position,normal = workspace:FindPartOnRay(ray,nil,false,false)
+	
+		if instance and instance:IsA("Terrain") then
+			SpawnItem.SpawnBarrel(Vector3.new(rand_x,position.y,rand_z),normal)
+		end
+	end
+end
+BarrelSpawner()
 --spawnAirdrop()
 -- spawn trees
 local tim3 = os.clock()
@@ -102,14 +122,12 @@ for i=1, trees do
 				local a = rand_x
 				local b = rand_z
 				for i=0,3 do
-					local rand = (math.random()*10) * math.random(-12,12)
-					local rand2 = (math.random()*10) * math.random(-12,12)
 					local partsinRadius = workspace:GetPartBoundsInRadius(Vector3.new(a,position.y,b),5)
 					if #partsinRadius > 0 then
 						trees+=1
 					else
 						local r = Ray.new(Vector3.new(a,max_height,b),Vector3.new(0,-1,0)*300)
-						local ins,pos,nm,mat = workspace:FindPartOnRay(r,nil,false,false)
+						local ins,pos,nm = workspace:FindPartOnRay(r,nil,false,false)
 						if ins and ins:IsA("Terrain") then
 							trees-=1
 							SpawnItem.SpawnTree(Harvestables.TestTree,Vector3.new(a,pos.y,b),nm,1500)
@@ -147,7 +165,7 @@ for i=1, nodes do
 	local raycastPos = Vector3.new(rand_x,max_height,rand_z)
 
 	local ray = Ray.new(raycastPos,Vector3.new(0,-1,0)*300)
-	local instance,position,norm,material = workspace:FindPartOnRay(ray,nil,false,false)
+	local instance,position = workspace:FindPartOnRay(ray,nil,false,false)
 
 	if instance and instance:IsA("Terrain") then
 		SpawnItem.SpawnNode(Harvestables.Rock,Vector3.new(rand_x,position.y,rand_z),1500)
