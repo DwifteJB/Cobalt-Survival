@@ -19,6 +19,7 @@ local InventoryManager = require(script.Parent:WaitForChild("Modules"):WaitForCh
 local BanSystem = require(script.Parent:WaitForChild("Modules"):WaitForChild("BanSystem"))
 local DamageSystem = require(script.Parent:WaitForChild("Modules"):WaitForChild("DamageSystem"))
 local Cooldown = require(script.Parent:WaitForChild("Modules"):WaitForChild("CooldownSystem"))
+local Barrel = require(script.Parent:WaitForChild("Modules"):WaitForChild("BarrelSystem"))
 
 local bulletsFolder = Instance.new("Folder")
 bulletsFolder.Name = "BulletsFolder"
@@ -100,30 +101,6 @@ coroutine.wrap(function()
 				PlayerPositions[player.UserId] = {}
 				for _,v in player.Character:GetChildren() do
 					if v:IsA("MeshPart") or v:IsA("Part") then
-						--[[if Trace == true then
-							if not Tracer:FindFirstChild(player.UserId) then
-								local PT = Instance.new("Folder")
-								PT.Name = player.UserId
-								PT.Parent = Tracer
-							end
-							for _,x in Tracer:GetChildren() do
-								for _,d in x:GetChildren() do
-									d:Destroy()
-								end
-							end
-							local V = v:Clone()
-							for _,x in V:GetChildren() do
-								pcall(function()
-									x:Destroy()
-								end)
-							end
-							V.Anchored = true
-							PS:SetPartCollisionGroup(V,"DoNot")
-							CanCollide(V,false)
-							V.Transparency = 0.6
-							V.Color = Color3.new(1,0,0.3)
-							V.Parent = Tracer[player.UserId]
-						end]]
 						PlayerPositions[player.UserId][v.Name] = v.CFrame
 					end
 				end
@@ -152,6 +129,24 @@ function onRayHit(cast,result,velocity,bullet)
 		BulletData[plrAtcking.UserId][bullet.BC.Value]["Hit"]=hit
 
 	end
+
+	--#region
+	local Instanced
+	local TagHarvest
+	if hit.Parent:GetAttribute("Tag") then
+		Instanced = hit.Parent
+		TagHarvest = hit.Parent:GetAttribute("Tag")
+	elseif hit:GetAttribute("Tag") then
+		Instanced = hit
+		TagHarvest = hit:GetAttribute("Tag")
+	elseif hit.Parent.Parent:GetAttribute("Tag") then
+		Instanced = hit.Parent.Parent
+		TagHarvest = hit.Parent.Parent:GetAttribute("Tag")
+	end
+	if Instanced and TagHarvest then
+		Barrel.Hit(TagHarvest,Instanced,bullet.Damage.Value)
+	end
+	--#endregion
 	BulletData[plrAtcking.UserId][bullet.BC.Value]["CFrame"]=hit.CFrame
 	BulletData[plrAtcking.UserId][bullet.BC.Value]["Bullet"] = {
 		["PartHit"]=hit,
