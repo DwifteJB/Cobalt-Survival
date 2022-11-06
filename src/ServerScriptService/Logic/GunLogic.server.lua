@@ -147,19 +147,23 @@ function onRayHit(cast,result,velocity,bullet)
 	]]
 	local character = hit:FindFirstAncestorWhichIsA("Model")
 	local plrAtcking = players:GetPlayerFromCharacter(bullet.Owner.Value)	
+
+	local BC = bullet:GetAttribute("BC")
+	local Damage = bullet:GetAttribute("Damage")
+	local Gun = bullet:GetAttribute("Gun")
+	print(BC,Damage,Gun)
 	if character and character:FindFirstChild("Humanoid") then
 
 		local plr = players:GetPlayerFromCharacter(character)
-		BulletData[plrAtcking.UserId][bullet:GetAttribute("BC")]["Hit"]=character
+		BulletData[plrAtcking.UserId][BC]["Hit"]=character
 
 		if plr then
-			DamageSystem.DamagePlayer(plrAtcking,plr,hit,bullet:GetAttribute("Damage"),bullet:GetAttribute("Gun"))
+			DamageSystem.DamagePlayer(plrAtcking,plr,hit,Damage,Gun)
 		else
-			DamageSystem.DamageNPC(plrAtcking,character:FindFirstChild("Humanoid"),hit,bullet:GetAttribute("Damage"))
+			DamageSystem.DamageNPC(plrAtcking,character:FindFirstChild("Humanoid"),hit,Damage)
 		end
 	else
-		BulletData[plrAtcking.UserId][bullet:GetAttribute("BC")]["Hit"]=hit
-
+		BulletData[plrAtcking.UserId][BC]["Hit"]=hit
 	end
 
 	--#region
@@ -177,17 +181,17 @@ function onRayHit(cast,result,velocity,bullet)
 	end
 	if Instanced and TagHarvest then
 		if Instanced:GetAttribute("Health") == nil or Instanced:GetAttribute("Tag")  == nil then return end
-		Barrel.Hit(TagHarvest,Instanced,bullet:GetAttribute("Damage"))
+		Barrel.Hit(TagHarvest,Instanced,Damage)
 		ReplicatedStorage.Remotes.Core.Hitmarker:FireClient(plrAtcking,false)
 	end
 	--#endregion
-	BulletData[plrAtcking.UserId][bullet:GetAttribute("BC")]["CFrame"]=hit.CFrame
-	BulletData[plrAtcking.UserId][bullet:GetAttribute("BC")]["Bullet"] = {
+	BulletData[plrAtcking.UserId][BC]["CFrame"]=hit.CFrame
+	BulletData[plrAtcking.UserId][BC]["Bullet"] = {
 		["PartHit"]=hit,
-		["Damage"]=bullet:GetAttribute("Damage"),
-		["GunValue"]=bullet:GetAttribute("Gun")
+		["Damage"]=Damage,
+		["GunValue"]=Gun
 	}
-	BulletData[plrAtcking.UserId][bullet:GetAttribute("BC")]["Finished"]=true
+	BulletData[plrAtcking.UserId][BC]["Finished"]=true
 	bullet:Destroy()
 end
 
