@@ -28,7 +28,7 @@ local LeanOff = Instance.new("CFrameValue")
 LeanOff.Value = CFrame.new(0,0,0)
 local SwayOffset = CFrame.new()
 local SwayMultiplier = 1
-local AimSwayMultiplier = 0.05
+local AimSwayMultiplier = 0.1
 local lastCameraCF = workspace.CurrentCamera.CFrame
 
 local mouse = player:GetMouse()
@@ -60,7 +60,6 @@ local reloading = false
 local QLean = nil
 local ELean = nil
 local MeleeThrow = false
-local Sprinting = false
 
 --
 
@@ -70,8 +69,8 @@ local Sprinting = false
 
 ]]
 
-function Bob(addition)
-	return math.sin(tick() * addition * 1.3) * 0.65 -- increase multipl for faster bobbing
+function Bob(addition,multiplier)
+	return math.sin(tick() * addition * 1.3) * multiplier -- increase multipl for faster bobbing
 end
 
 local RenderStepped = {}
@@ -87,10 +86,13 @@ function RenderStepped.CurrentWeapon(delta)
 		local rotation = Camera.CFrame:ToObjectSpace(lastCameraCF)
 		local x,y = rotation:ToOrientation()
 		if aiming == false then
-			local bob = Vector3.new(Bob(10),Bob(5),Bob(5))
+			local bob = Vector3.new(Bob(10,0.65),Bob(5,0.65),Bob(5,0.65))
 			BobbingSpring:shove(bob / 10 * (player.Character.HumanoidRootPart.Velocity.Magnitude / 10))
 			SwayOffset = SwayOffset:Lerp(CFrame.Angles(math.sin(x)*SwayMultiplier,math.sin(y)*SwayMultiplier,0),0.1)
 		else
+			local bob = Vector3.new(Bob(1,0.1),Bob(0.5,0.1),Bob(0.5,0.1))
+			BobbingSpring:shove(bob / 10 * (player.Character.HumanoidRootPart.Velocity.Magnitude / 10))
+	
 			SwayOffset = SwayOffset:Lerp(CFrame.Angles(math.sin(x)*AimSwayMultiplier,math.sin(y)*AimSwayMultiplier,0),0.1)
 		end
 
@@ -102,7 +104,6 @@ function RenderStepped.CurrentWeapon(delta)
 end
 
 function resetVals()
-	Sprinting = false
 	heldMouse1 = false
 	isToolReady = false
 	isMelee = nil
@@ -303,7 +304,6 @@ end)
 
 ControlsBegan.Sprint.Event:Connect(function()
 	if _G.InInv == false and aiming == false then
-		Sprinting = true
 		local Properties = {FieldOfView = 95}
 		local T = TweenService:Create(workspace.Camera,GeneralTween,Properties)
 		local T2 = TweenService:Create(viewModelOffset,GeneralTween,{Value = CFrame.new(0,-1.6,0)*CFrame.Angles(math.random(12,12.2),0,0)})
@@ -331,9 +331,7 @@ ControlsBegan.MouseButton2.Event:Connect(function()
 			T:Play()
 			Tween:Play()	
 			Tween.Completed:Connect(function()
-				local offset3 = CurrentWeapon[CurrentWeapon.Name].Aim.CFrame:toObjectSpace(CurrentWeapon.PrimaryPart.CFrame)
-
-				viewModelOffset.Value = offset3
+				viewModelOffset.Value = CurrentWeapon[CurrentWeapon.Name].Aim.CFrame:toObjectSpace(CurrentWeapon.PrimaryPart.CFrame)
 			end)
 			aiming = true
 		end
@@ -631,3 +629,6 @@ end)
 RS.RenderStepped:Connect(function(delta)
 	RenderStepped.CurrentWeapon(delta)
 end)
+
+local Loading = workspace:WaitForChild("Loading"):WaitForChild("Framework")
+Loading.Value = true
