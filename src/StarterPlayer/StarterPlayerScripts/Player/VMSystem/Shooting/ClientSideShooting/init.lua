@@ -43,7 +43,7 @@ end
 --[[local Tracer = Instance.new("Folder")
 Tracer.Name = "LclTracer"
 Tracer.Parent =workspace--]]
-local PS = game:GetService("PhysicsService")
+
 coroutine.wrap(function()
 	while wait(0.3) do
 		for _,player in players:GetPlayers() do
@@ -73,6 +73,7 @@ function onRayHit(cast,result,velocity,bullet)
 	else
 		BulletData[bullet.BC.Value]["Hit"]=hit
 	end
+	BulletData[bullet.BC.Value]["PartHit"]=hit
 	BulletData[bullet.BC.Value]["CFrame"]=hit.CFrame
 	BulletData[bullet.BC.Value]["Finished"]=true
 	bullet:Destroy()

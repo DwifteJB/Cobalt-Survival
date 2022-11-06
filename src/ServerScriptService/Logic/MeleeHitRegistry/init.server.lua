@@ -11,7 +11,7 @@ local cast = FSR.new()
 local castBehaviour = cast.newBehavior()
 local castParams = RaycastParams.new()
 castBehaviour.AutoIgnoreContainer = true
-castBehaviour.Acceleration = Vector3.new(0, -workspace.Gravity*0.65, 0)
+castBehaviour.Acceleration = Vector3.new(0, -workspace.Gravity*0.75, 0)
 castParams.IgnoreWater = true
 castParams.FilterType = Enum.RaycastFilterType.Blacklist
 
@@ -211,23 +211,22 @@ Remotes.Melee.ValidateRaycast.OnServerInvoke = function(player,mouse,Tag)
 	if hitData[player.UserId] == nil then
 		hitData[player.UserId] = {}
 		hitData[player.UserId][TagName] = {
-			["LastHit"] = os.clock()-10
+			["LastHit"] = os.clock()
 		}
 	end
 	if hitData[player.UserId][TagName].LastHit + ReplicatedStorage.Items[TagName].AnimationsCoolDown.Fire.Value >= os.clock() then return; end 
 	--local direction = (mouse + player.Character.Head.Position).Unit * 16 -- only do 10 studs of distance!
 	local raycastParams = RaycastParams.new()
-	local blacklist = {player.Character,player}
 	raycastParams.IgnoreWater = true
 	raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
-	raycastParams.FilterDescendantsInstances = blacklist
+	raycastParams.FilterDescendantsInstances = {player.Character,player}
 	local ray = workspace:Raycast(player.Character.Head.Position, (mouse -player.Character.Head.Position).Unit * 100, raycastParams)
 	hitData[player.UserId][TagName] = {
 		["LastHit"] = os.clock()
 	}
 	if ray then
 		if not player.Character.RightHand:FindFirstChild(TagName) then
-			BanSystem.AnticheatBanOnline(player,"022","Player tool didn't match what player was holding.")
+			return
 		end
 		local itemValues = ReplicatedStorage.Items[TagName]
 		if ray.Distance <= itemValues.Range.Value then

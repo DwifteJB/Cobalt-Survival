@@ -1,6 +1,6 @@
 math.randomseed(tick())
 
-local Desync = 5
+local Desync = 5 -- magnitude!
 
 local fireData = {}
 local ReloadData = {}
@@ -32,7 +32,7 @@ local caster = FastCast.new()
 local castBehaviour = FastCast.newBehavior()
 local castParams = RaycastParams.new()
 castBehaviour.AutoIgnoreContainer = true
-castBehaviour.Acceleration = Vector3.new(0, -workspace.Gravity*0.75, 0)
+castBehaviour.Acceleration = Vector3.new(0, -workspace.Gravity*0.5, 0)
 castParams.IgnoreWater = true
 castParams.FilterType = Enum.RaycastFilterType.Blacklist
 
@@ -68,39 +68,47 @@ end
 
 
 coroutine.wrap(function()
-	while wait(5) do
+	while task.wait(5) do
 		for _, player in players:GetPlayers() do
 			local data = Remotes.Gun.ClientSidePrediction:InvokeClient(player)
 			if data == nil then return end
 			local ClientPos = data.PS
 			local BulData = data.BD
+			print(ClientPos,PlayerPositions)
 			if BulletData[player.UserId] then
-				for ServerNum,v in BulletData[player.UserId] do
-					if v.Time + 7 < os.time() and v.Finished == true then
+				for ServerNum,ServerBulletData in BulletData[player.UserId] do
+					if ServerBulletData.Time + 7 < os.time() and ServerBulletData.Finished == true then
 						BulletData[ServerNum] = nil
-					elseif v.Finished == true and v.Hit and v.CFrame then
-						for ClientNum,e in BulData do
-							if tonumber(ClientNum) == tonumber(ServerNum) then
-								-- cross side refrence
-								if not e.Hit or not v.Hit then return end
-								local plrAtcking1 = players:GetPlayerFromCharacter(e.Hit:FindFirstAncestorWhichIsA("Model"))
-								local plrAttcking2 = players:GetPlayerFromCharacter(v.Hit:FindFirstAncestorWhichIsA("Model"))
-								if not plrAtcking1 and plrAttcking2 then
-									if (v.CFrame.Position.X - e.CFrame.Position.X <= Desync or v.CFrame.Position.X - e.CFrame.Position.X <= -Desync) and (v.CFrame.Position.Z - e.CFrame.Position.Z <= Desync or v.CFrame.Position.Z - e.CFrame.Position.Z <= -Desync) then
-										if ClientPos[plrAttcking2.UserId] and PlayerPositions[plrAttcking2.UserId] then
-											local PlrSPos = PlayerPositions[plrAttcking2.UserId]
-											local PlrCPos = ClientPos[plrAttcking2.UserId]
-											if (PlrSPos.Position.X - PlrCPos.CFrame.Position.X <= Desync or PlrSPos.CFrame.Position.X - PlrCPos.CFrame.Position.X <= -Desync) and (PlrSPos.CFrame.Position.Z - PlrCPos.CFrame.Position.Z <= Desync or PlrSPos.CFrame.Position.Z - PlrCPos.CFrame.Position.Z <= -Desync) then
-												if (v.Time - e.Time) <= 4 or (v.Time - e.Time) <= -4 then
-													DamageSystem.DamagePlayer(plrAttcking2,player,v.Bullet.PartHit,v.Bullet.Damage,v.Bullet.GunValue)
-													print("Hit through prediction")
-												end
-											end
+						print("deleted",ServerNum)
+					elseif ServerBulletData.Finished == true then
+						for ClientNum,ClientBulletData in BulData do
+							if ClientBulletData.Time + 7 < os.time() then
+								BulData[ClientNum] = nil
+								return
+							end
+							-- cross side refrence
+							if not ClientBulletData.Hit or ClientBulletData.Finished == false then return end
+							local PlrClientHit = players:GetPlayerFromCharacter(ClientBulletData.Hit:FindFirstAncestorWhichIsA("Model"))
+							if PlrClientHit then
+								print("found player!",PlrClientHit)
+								if ClientPos[PlrClientHit.UserId] and PlayerPositions[PlrClientHit.UserId] then
+									local PlrSPos = PlayerPositions[PlrClientHit.UserId]
+									local PlrCPos = ClientPos[PlrClientHit.UserId]
+									local ClientPartHit = PlrCPos["HumanoidRootPart"]
+									local ServerPartHit = PlrSPos["HumanoidRootPart"]
+									if table.find(PlrSPos,ClientBulletData.PartHit) then
+										ClientPartHit = PlrCPos[ClientBulletData.PartHit]
+										ServerPartHit = PlrSPos[ClientBulletData.PartHit]
+									end
+									if (ClientPartHit.Position - ServerPartHit.Position).Magnitude < Desync then
+										if (ServerBulletData.Time - ClientBulletData.Time) <= 4 or (ServerBulletData.Time - ClientBulletData.Time) <= -4 then
+											DamageSystem.DamagePlayer(PlrClientHit,player,ServerBulletData.Bullet.PartHit,ServerBulletData.Bullet.Damage,ServerBulletData.Bullet.GunValue)
+											print("Hit through prediction")
 										end
 									end
 								end
-								BulletData[player.UserId][ServerNum] = nil
 							end
+							BulletData[player.UserId][ServerNum] = nil
 						end
 					end
 				end
@@ -129,20 +137,28 @@ end)()
 function onRayHit(cast,result,velocity,bullet)
 	local hit = result.Instance
 	if hit == nil then return end
+	--[[
+
+		bullet:SetAttribute("Gun", currentWeapon.NameTag.Value)
+
+		bullet:SetAttribute("BC", timeSent)
+
+		bullet:SetAttribute("Damage", ItemValues.Damage.Value)
+	]]
 	local character = hit:FindFirstAncestorWhichIsA("Model")
 	local plrAtcking = players:GetPlayerFromCharacter(bullet.Owner.Value)	
 	if character and character:FindFirstChild("Humanoid") then
 
 		local plr = players:GetPlayerFromCharacter(character)
-		BulletData[plrAtcking.UserId][bullet.BC.Value]["Hit"]=character
+		BulletData[plrAtcking.UserId][bullet:GetAttribute("BC")]["Hit"]=character
 
 		if plr then
-			DamageSystem.DamagePlayer(plrAtcking,plr,hit,bullet.Damage.Value,bullet.Gun.Value)
+			DamageSystem.DamagePlayer(plrAtcking,plr,hit,bullet:GetAttribute("Damage"),bullet:GetAttribute("Gun"))
 		else
-			DamageSystem.DamageNPC(plrAtcking,character:FindFirstChild("Humanoid"),hit,bullet.Damage.Value)
+			DamageSystem.DamageNPC(plrAtcking,character:FindFirstChild("Humanoid"),hit,bullet:GetAttribute("Damage"))
 		end
 	else
-		BulletData[plrAtcking.UserId][bullet.BC.Value]["Hit"]=hit
+		BulletData[plrAtcking.UserId][bullet:GetAttribute("BC")]["Hit"]=hit
 
 	end
 
@@ -161,17 +177,17 @@ function onRayHit(cast,result,velocity,bullet)
 	end
 	if Instanced and TagHarvest then
 		if Instanced:GetAttribute("Health") == nil or Instanced:GetAttribute("Tag")  == nil then return end
-		Barrel.Hit(TagHarvest,Instanced,bullet.Damage.Value)
+		Barrel.Hit(TagHarvest,Instanced,bullet:GetAttribute("Damage"))
 		ReplicatedStorage.Remotes.Core.Hitmarker:FireClient(plrAtcking,false)
 	end
 	--#endregion
-	BulletData[plrAtcking.UserId][bullet.BC.Value]["CFrame"]=hit.CFrame
-	BulletData[plrAtcking.UserId][bullet.BC.Value]["Bullet"] = {
+	BulletData[plrAtcking.UserId][bullet:GetAttribute("BC")]["CFrame"]=hit.CFrame
+	BulletData[plrAtcking.UserId][bullet:GetAttribute("BC")]["Bullet"] = {
 		["PartHit"]=hit,
-		["Damage"]=bullet.Damage.Value,
-		["GunValue"]=bullet.Gun.Value
+		["Damage"]=bullet:GetAttribute("Damage"),
+		["GunValue"]=bullet:GetAttribute("Gun")
 	}
-	BulletData[plrAtcking.UserId][bullet.BC.Value]["Finished"]=true
+	BulletData[plrAtcking.UserId][bullet:GetAttribute("BC")]["Finished"]=true
 	bullet:Destroy()
 end
 
@@ -251,27 +267,17 @@ Remotes.Gun.Fire.OnServerInvoke = function(player,mousePos,Tag,timeSent)
 	findplrfrombullet.Value = player.Character
 	findplrfrombullet.Parent = bullet
 
-	local GUN = Instance.new("StringValue")
-	GUN.Name = "Gun"
-	GUN.Value = currentWeapon.NameTag.Value
-	GUN.Parent = bullet
+	bullet:SetAttribute("Gun", currentWeapon.NameTag.Value)
 
-	local BC = Instance.new("IntValue")
-	BC.Name = "BC"
-	BC.Value = timeSent
-	BC.Parent = bullet
+	bullet:SetAttribute("BC", timeSent)
 
-	local dmg = ItemValues.Damage:Clone()
-	dmg.Parent = bullet
-	
-	local WhizSound = ReplicatedStorage.Sounds.Whiz:Clone()
-	WhizSound:Play()
-	WhizSound.Parent = bullet
+	bullet:SetAttribute("Damage", ItemValues.Damage.Value)
 
 	castParams.FilterDescendantsInstances = {player,player.Character,bulletsFolder}
 	castBehaviour.RaycastParams = castParams
 	castBehaviour.CosmeticBulletContainer = bulletsFolder
 	castBehaviour.CosmeticBulletTemplate = bullet
+	
 	local sprd = ItemValues.Spread.Value
 	fireData[player.UserId][Tag].LastShot = os.clock()
 	currentWeapon.Magazine.Value -= 1

@@ -44,7 +44,7 @@ end)
 
 Player.Character.DescendantAdded:Connect(function(Descent)
 	pcall(function()
-		if table.Find(banned,Descent.Class) then
+		if table.find(banned,Descent.Class) then
 			Bye("019")
 		end
 	end)
