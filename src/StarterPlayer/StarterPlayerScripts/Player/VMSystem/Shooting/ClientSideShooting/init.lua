@@ -40,10 +40,9 @@ function playSound(player,Sound)
 	return ClonedSound
 end
 
---[[local Tracer = Instance.new("Folder")
-Tracer.Name = "LclTracer"
-Tracer.Parent =workspace--]]
 
+
+--[[ #CLIENTSIDEPREDICTION
 coroutine.wrap(function()
 	while wait(0.3) do
 		for _,player in players:GetPlayers() do
@@ -58,14 +57,16 @@ coroutine.wrap(function()
 
 		end
 	end
-end)()
+end)()--]]
 
+--[[ #CLIENTSIDEPREDICTION
 ReplicatedStorage.Remotes.Gun.ClientSidePrediction.OnClientInvoke = function()
 	return {["PS"]=PlayerPositions,["BD"]=BulletData}
-end
+end--]]
 
 function onRayHit(cast,result,velocity,bullet)
 	local hit = result.Instance
+	--[[ #CLIENTSIDEPREDICTION
 	local character = hit:FindFirstAncestorWhichIsA("Model")
 	if character and character:FindFirstChild("Humanoid") then
 		BulletData[bullet.BC.Value]["Hit"]=character
@@ -75,7 +76,7 @@ function onRayHit(cast,result,velocity,bullet)
 	end
 	BulletData[bullet.BC.Value]["PartHit"]=hit
 	BulletData[bullet.BC.Value]["CFrame"]=hit.CFrame
-	BulletData[bullet.BC.Value]["Finished"]=true
+	BulletData[bullet.BC.Value]["Finished"]=true--]]
 	bullet:Destroy()
 end
 
@@ -88,17 +89,18 @@ function onLengthChanged(cast, lastPoint, direction, length, velocity, bullet)
 
 end
 function CSH.Fire(mousePos,CW,timeSent,gunName) 
+	--[[ #CLIENTSIDEPREDICTION
 	pcall(function()
 		for i,v in BulletData do
 			if v.Time +7 < os.time() and v.Finished == true then
 				BulletData[i] = nil
 			end
 		end
-		--[[if BulletData[#BulletCount].Time + 5 > os.time() then
+		if BulletData[#BulletCount].Time + 5 > os.time() then
 			BulletData = nil
 			BulletCount = nil
-		end]]
-	end)
+		end
+	end)]]
 
 	local sprd = ReplicatedStorage.Items[CW.Name].Spread.Value
 	if SpreadReturn == nil then
@@ -107,10 +109,11 @@ function CSH.Fire(mousePos,CW,timeSent,gunName)
 	local Bullet = ReplicatedStorage.Items.Bullets.Pistol:Clone()
 
 
+	--[[ #CLIENTSIDEPREDICTION
 	local BC = Instance.new("IntValue")
 	BC.Name = "BC"
 	BC.Value = timeSent
-	BC.Parent = Bullet
+	BC.Parent = Bullet]]
 	
 	--bullet trails
 	local attach0 = Instance.new("Attachment")
@@ -147,9 +150,10 @@ function CSH.Fire(mousePos,CW,timeSent,gunName)
 	castBehaviour.RaycastParams = castParams
 	castBehaviour.CosmeticBulletContainer = LBF
 	castBehaviour.CosmeticBulletTemplate = Bullet
+	--[[ #CLIENTSIDEPREDICTION
 	BulletData[timeSent] = {}
 	BulletData[timeSent].Time = os.time()
-	BulletData[timeSent]["Finished"] = false
+	BulletData[timeSent]["Finished"] = false]]
 	local Velocity =  ReplicatedStorage.Items[CW.Name].BulletVelocity.Value
 	playSound(player,ReplicatedStorage.Items[CW.Name].Sound)
 	coroutine.wrap(function()

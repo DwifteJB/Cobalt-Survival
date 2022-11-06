@@ -4,8 +4,10 @@ local Desync = 5 -- magnitude!
 
 local fireData = {}
 local ReloadData = {}
+--[[ #CLIENTSIDEPREDICTION
+
 local BulletData = {}
-local PlayerPositions = {}
+local PlayerPositions = {}--]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Remotes = ReplicatedStorage.Remotes
@@ -50,10 +52,6 @@ SwappedWeapon.Event:Connect(function(player,newTag)
 		end
 	end
 end)
---[[local Tracer = Instance.new("Folder")
-Tracer.Name = "Tracer"
-Tracer.Parent =workspace--]]
-
 
 function CanCollide(Obj, Collide)
 	for i,v in pairs(Obj:GetChildren()) do
@@ -66,6 +64,8 @@ function CanCollide(Obj, Collide)
 	end
 end
 
+
+--[[#CLIENTSIDEPREDICTION
 
 coroutine.wrap(function()
 	while true do
@@ -139,30 +139,21 @@ coroutine.wrap(function()
 
 		end
 	end
-end)()
+end)() --]]
 
 function onRayHit(cast,result,velocity,bullet)
 	local hit = result.Instance
 	if hit == nil then return end
-	--[[
-
-		bullet:SetAttribute("Gun", currentWeapon.NameTag.Value)
-
-		bullet:SetAttribute("BC", timeSent)
-
-		bullet:SetAttribute("Damage", ItemValues.Damage.Value)
-	]]
 	local character = hit:FindFirstAncestorWhichIsA("Model")
 	local plrAtcking = players:GetPlayerFromCharacter(bullet.Owner.Value)	
 
 	local BC = bullet:GetAttribute("BC")
 	local Damage = bullet:GetAttribute("Damage")
 	local Gun = bullet:GetAttribute("Gun")
-	print(BC,Damage,Gun)
 	if character and character:FindFirstChild("Humanoid") then
 
 		local plr = players:GetPlayerFromCharacter(character)
-		BulletData[plrAtcking.UserId][BC]["Hit"]=character
+		-- #CLIENTSIDEPREDICTION BulletData[plrAtcking.UserId][BC]["Hit"]=character
 
 		if plr then
 			DamageSystem.DamagePlayer(plrAtcking,plr,hit,Damage,Gun)
@@ -170,7 +161,7 @@ function onRayHit(cast,result,velocity,bullet)
 			DamageSystem.DamageNPC(plrAtcking,character:FindFirstChild("Humanoid"),hit,Damage)
 		end
 	else
-		BulletData[plrAtcking.UserId][BC]["Hit"]=hit
+		-- #CLIENTSIDEPREDICTION BulletData[plrAtcking.UserId][BC]["Hit"]=hit
 	end
 
 	--#region
@@ -192,6 +183,7 @@ function onRayHit(cast,result,velocity,bullet)
 		ReplicatedStorage.Remotes.Core.Hitmarker:FireClient(plrAtcking,false)
 	end
 	--#endregion
+	--[[ #CLIENTSIDEPREDICTION
 	BulletData[plrAtcking.UserId][BC]["CFrame"]=hit.CFrame
 	BulletData[plrAtcking.UserId][BC]["Bullet"] = {
 		["PartHit"]=hit,
@@ -199,7 +191,7 @@ function onRayHit(cast,result,velocity,bullet)
 		["GunValue"]=Gun
 	}
 	BulletData[plrAtcking.UserId][BC]["Finished"]=true
-	bullet:Destroy()
+	bullet:Destroy() --]]
 end
 
 function onLengthChanged(cast, lastPoint, direction, length, velocity, bullet)
@@ -229,9 +221,10 @@ Remotes.Gun.Fire.OnServerInvoke = function(player,mousePos,Tag,timeSent)
 	if fireData[player.UserId] == nil then
 		fireData[player.UserId] = {}
 	end
+	--[[ #CLIENTSIDEPREDICTION
 	if BulletData[player.UserId] == nil then
 		BulletData[player.UserId] = {}
-	end
+	end]]
 	if ReloadData[player.UserId] == nil then
 		ReloadData[player.UserId] = {
 			["Reloading"]=false,
@@ -268,10 +261,9 @@ Remotes.Gun.Fire.OnServerInvoke = function(player,mousePos,Tag,timeSent)
 		BanSystem.AnticheatBanOnline(player,"026","Player tried to shoot a gun that didn't belong to them")
 	end
 
-	local bullet = ReplicatedStorage.Items.Bullets["Pistol"]:Clone()
+	local bullet = Instance.new("Part")
 	bullet.Size = Vector3.new(0.1,0.1,0.1)
 	bullet.Transparency = 1
-	
 	
 	local findplrfrombullet = Instance.new("ObjectValue")
 	findplrfrombullet.Name = "Owner"
@@ -283,7 +275,7 @@ Remotes.Gun.Fire.OnServerInvoke = function(player,mousePos,Tag,timeSent)
 	bullet:SetAttribute("BC",timeSent)
 
 	bullet:SetAttribute("Damage", ItemValues.Damage.Value)
-
+	
 	castParams.FilterDescendantsInstances = {player,player.Character,bulletsFolder}
 	castBehaviour.RaycastParams = castParams
 	castBehaviour.CosmeticBulletContainer = bulletsFolder
@@ -300,9 +292,9 @@ Remotes.Gun.Fire.OnServerInvoke = function(player,mousePos,Tag,timeSent)
 	coroutine.wrap(function()
 		Remotes.Gun.spreadReturn:FireClient(player,spread)
 	end)()
-	BulletData[player.UserId][timeSent] = {}
+	--[[BulletData[player.UserId][timeSent] = {}
 	BulletData[player.UserId][timeSent].Time = os.time()
-	BulletData[player.UserId][timeSent].Finished = false
+	BulletData[player.UserId][timeSent].Finished = false]]
 	local org = player.Character.Head.Position
 	local dir = spread*(mousePos - player.Character.Head.Position).Unit * 100
 	local vel = ItemValues.BulletVelocity.Value
@@ -369,23 +361,4 @@ Remotes.Gun.Reload.OnServerEvent:Connect(function(player,tag)
 
 	end
 end)
-
-Remotes.Gun.getGunSpreadValues.OnServerInvoke = function(Player)
-	if Cooldown.Fire(Player,"GetSpread",2000) == false then return end
-	local gSpread = {}
-	local gVelocity = {}
-	for _,folder in ReplicatedStorage.Items:GetChildren() do
-		if folder:IsA("Folder") then
-			for _,val in folder:GetChildren() do
-				if val.Name == "Spread" then
-					gSpread[folder.Name] = val.Value
-				end
-				if val.Name == "BulletVelocity" then
-					gVelocity[folder.Name] = val.Value
-				end
-			end
-		end
-	end
-	return {["Spread"]=gSpread,["Velocity"]=gVelocity}
-end
 
