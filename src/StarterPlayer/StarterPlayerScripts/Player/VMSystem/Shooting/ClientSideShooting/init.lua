@@ -151,9 +151,9 @@ function CSH.Fire(mousePos,CW,timeSent,gunName)
 	BulletData[timeSent].Time = os.time()
 	BulletData[timeSent]["Finished"] = false
 	local Velocity =  ReplicatedStorage.Items[CW.Name].BulletVelocity.Value
-	playSound(player,ReplicatedStorage.Items[gunName].Sound)
+	playSound(player,ReplicatedStorage.Items[CW.Name].Sound)
 	coroutine.wrap(function()
-		crst:Fire(player.Character.Head.Position,SpreadReturn*(mousePos - player.Character.Head.Position).Unit * 100,Velocity,castBehaviour)
+		crst:Fire(CW[CW.Name].FirePoint.Position,SpreadReturn*(mousePos - player.Character.Head.Position).Unit * 100,Velocity,castBehaviour)
 	end)()
 end
 

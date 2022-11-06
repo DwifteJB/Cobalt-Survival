@@ -97,9 +97,6 @@ function RenderStepped.CurrentWeapon(delta)
 		CurrentWeapon:SetPrimaryPartCFrame(workspace.Camera.CFrame * viewModelOffset.Value * CFrame.new(GunBobUpdate.Y,GunBobUpdate.X,0)*SwayOffset*CFrame.Angles(math.rad(GunRCSpringUpdate.Y),0,0)) --CFrame.Angles(math.rad(GunBobUpdate.Y),math.rad(GunBobUpdate.X),math.rad(GunBobUpdate.Z))
 		Camera.CFrame *= CFrame.Angles(math.rad(updatedRecoilSpring.x),math.rad(updatedRecoilSpring.y),math.rad(updatedRecoilSpring.z)) * LeanOff.Value
 		lastCameraCF = workspace.CurrentCamera.CFrame
-		if QLean == true or ELean == true then
-			CurrentWeapon[CurrentWeapon.Name].Aim.CFrame = Camera.CFrame
-		end
 
 	end
 end
@@ -332,7 +329,12 @@ ControlsBegan.MouseButton2.Event:Connect(function()
 			local Properties = {FieldOfView = 80}
 			local T = TweenService:Create(Camera,GeneralTween,Properties)
 			T:Play()
-			Tween:Play()			
+			Tween:Play()	
+			Tween.Completed:Connect(function()
+				local offset3 = CurrentWeapon[CurrentWeapon.Name].Aim.CFrame:toObjectSpace(CurrentWeapon.PrimaryPart.CFrame)
+
+				viewModelOffset.Value = offset3
+			end)
 			aiming = true
 		end
 	elseif ReplicatedStorage.Items[CurrentWeapon.Name].Melee.Value == true then
