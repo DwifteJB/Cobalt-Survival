@@ -68,52 +68,59 @@ end
 
 
 coroutine.wrap(function()
-	while task.wait(5) do
+	while true do
+		print("srtrloop ")
 		for _, player in players:GetPlayers() do
 			local data = Remotes.Gun.ClientSidePrediction:InvokeClient(player)
-			if data == nil then return end
-			local ClientPos = data.PS
-			local BulData = data.BD
-			print(ClientPos,PlayerPositions)
-			if BulletData[player.UserId] then
-				for ServerNum,ServerBulletData in BulletData[player.UserId] do
-					if ServerBulletData.Time + 7 < os.time() and ServerBulletData.Finished == true then
-						BulletData[ServerNum] = nil
-						print("deleted",ServerNum)
-					elseif ServerBulletData.Finished == true then
-						for ClientNum,ClientBulletData in BulData do
-							if ClientBulletData.Time + 7 < os.time() then
-								BulData[ClientNum] = nil
-								return
-							end
-							-- cross side refrence
-							if not ClientBulletData.Hit or ClientBulletData.Finished == false then return end
-							local PlrClientHit = players:GetPlayerFromCharacter(ClientBulletData.Hit:FindFirstAncestorWhichIsA("Model"))
-							if PlrClientHit then
-								print("found player!",PlrClientHit)
-								if ClientPos[PlrClientHit.UserId] and PlayerPositions[PlrClientHit.UserId] then
-									local PlrSPos = PlayerPositions[PlrClientHit.UserId]
-									local PlrCPos = ClientPos[PlrClientHit.UserId]
-									local ClientPartHit = PlrCPos["HumanoidRootPart"]
-									local ServerPartHit = PlrSPos["HumanoidRootPart"]
-									if table.find(PlrSPos,ClientBulletData.PartHit) then
-										ClientPartHit = PlrCPos[ClientBulletData.PartHit]
-										ServerPartHit = PlrSPos[ClientBulletData.PartHit]
-									end
-									if (ClientPartHit.Position - ServerPartHit.Position).Magnitude < Desync then
-										if (ServerBulletData.Time - ClientBulletData.Time) <= 4 or (ServerBulletData.Time - ClientBulletData.Time) <= -4 then
-											DamageSystem.DamagePlayer(PlrClientHit,player,ServerBulletData.Bullet.PartHit,ServerBulletData.Bullet.Damage,ServerBulletData.Bullet.GunValue)
-											print("Hit through prediction")
+			if data then 
+				local ClientPos = data.PS
+				local BulData = data.BD
+				if BulletData[player.UserId] then
+					print(2)
+					for ServerNum,ServerBulletData in BulletData[player.UserId] do
+						if ServerBulletData.Time + 7 < os.time() then
+							print("deleted",ServerNum)
+							BulletData[ServerNum] = nil
+		
+						elseif ServerBulletData.Finished == true then
+							for ClientNum,ClientBulletData in BulData do
+								if ServerBulletData.Time == ClientBulletData.Time then
+
+									if ClientBulletData.Hit or ClientBulletData.Finished == true then 
+
+										local PlrClientHit = players:GetPlayerFromCharacter(ClientBulletData.Hit:FindFirstAncestorWhichIsA("Model"))
+										if PlrClientHit then
+											print("found player!",PlrClientHit)
+											if ClientPos[PlrClientHit.UserId] and PlayerPositions[PlrClientHit.UserId] then
+												local PlrSPos = PlayerPositions[PlrClientHit.UserId]
+												local PlrCPos = ClientPos[PlrClientHit.UserId]
+												local ClientPartHit = PlrCPos["HumanoidRootPart"]
+												local ServerPartHit = PlrSPos["HumanoidRootPart"]
+												if table.find(PlrSPos,ClientBulletData.PartHit) then
+													ClientPartHit = PlrCPos[ClientBulletData.PartHit]
+													ServerPartHit = PlrSPos[ClientBulletData.PartHit]
+												end
+												if (ClientPartHit.Position - ServerPartHit.Position).Magnitude < Desync then
+													if (ServerBulletData.Time - ClientBulletData.Time) <= 4 or (ServerBulletData.Time - ClientBulletData.Time) <= -4 then
+														DamageSystem.DamagePlayer(PlrClientHit,player,ServerBulletData.Bullet.PartHit,ServerBulletData.Bullet.Damage,ServerBulletData.Bullet.GunValue)
+														print("Hit through prediction")
+													end
+												end
+											end
 										end
+									
 									end
+							
+									BulletData[player.UserId][ServerNum] = nil
 								end
+		
 							end
-							BulletData[player.UserId][ServerNum] = nil
 						end
 					end
 				end
 			end
 		end
+		wait(5)
 	end
 end)()
 
@@ -273,7 +280,7 @@ Remotes.Gun.Fire.OnServerInvoke = function(player,mousePos,Tag,timeSent)
 
 	bullet:SetAttribute("Gun", currentWeapon.NameTag.Value)
 
-	bullet:SetAttribute("BC", timeSent)
+	bullet:SetAttribute("BC",timeSent)
 
 	bullet:SetAttribute("Damage", ItemValues.Damage.Value)
 

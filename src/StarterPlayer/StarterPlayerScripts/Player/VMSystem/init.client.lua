@@ -590,7 +590,6 @@ end)
 
 ControlsEnded.Sprint.Event:Connect(function()
 	if aiming == false then
-		Sprinting = false
 		local Properties = {FieldOfView = 90}
 		local T = TweenService:Create(Camera,GeneralTween,Properties)
 		local T2 = TweenService:Create(viewModelOffset,GeneralTween,{Value = CFrame.new(0,-1.5,0)})
