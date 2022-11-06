@@ -69,5 +69,6 @@ Remotes.Chat.SendChatMessage.OnClientEvent:Connect(function(playerChat,initialCh
 	end
 	lastTimeInteracted = os.clock()
 	InputMSG.Visible = true
+	Chat.CanvasPosition = Vector2.new(0,1000000000000)
 	Chat.Visible = true
 end)

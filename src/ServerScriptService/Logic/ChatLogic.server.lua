@@ -19,9 +19,11 @@ Remotes.Chat.SendChatMessage.OnServerEvent:Connect(function(player,ChatMSG)
 	if not suc then
 		return
 	end
-	if (string.len(player.DisplayName) + string.len(Message)) <= 200 then
+	Message = string.gsub(Message,">","")
+	Message = string.gsub(Message,"<","")
+	if (string.len(player.DisplayName) + string.len(Message)) <= 80 then
 		-- send message
-		if (string.len(player.DisplayName) + string.len(Message)) > 66 then
+		--[[if (string.len(player.DisplayName) + string.len(Message)) > 66 then
 			-- needs to create extra
 			local InitialChat = string.sub(Message,1,66-string.len(player.DisplayName))
 			local AddChat = string.sub(Message,67-string.len(player.DisplayName),-1)
@@ -29,6 +31,9 @@ Remotes.Chat.SendChatMessage.OnServerEvent:Connect(function(player,ChatMSG)
 		else
 			local InitialChat = string.sub(Message,1,66-string.len(player.DisplayName))
 			Remotes.Chat.SendChatMessage:FireAllClients(player,InitialChat)
-		end
+		end]]
+
+		local InitialChat = string.sub(Message,1,80-string.len(player.DisplayName))
+		Remotes.Chat.SendChatMessage:FireAllClients(player,InitialChat)
 	end
 end)
