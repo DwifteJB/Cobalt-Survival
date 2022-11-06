@@ -92,14 +92,14 @@ function RenderStepped.CurrentWeapon(delta)
 		else
 			local bob = Vector3.new(Bob(1,0.1),Bob(0.5,0.1),Bob(0.5,0.1))
 			BobbingSpring:shove(bob / 10 * (player.Character.HumanoidRootPart.Velocity.Magnitude / 10))
-	
+							
 			SwayOffset = SwayOffset:Lerp(CFrame.Angles(math.sin(x)*AimSwayMultiplier,math.sin(y)*AimSwayMultiplier,0),0.1)
 		end
 
-		CurrentWeapon:SetPrimaryPartCFrame(workspace.Camera.CFrame * viewModelOffset.Value * CFrame.new(GunBobUpdate.Y,GunBobUpdate.X,0)*SwayOffset*CFrame.Angles(math.rad(GunRCSpringUpdate.Y),0,0)) --CFrame.Angles(math.rad(GunBobUpdate.Y),math.rad(GunBobUpdate.X),math.rad(GunBobUpdate.Z))
 		Camera.CFrame *= CFrame.Angles(math.rad(updatedRecoilSpring.x),math.rad(updatedRecoilSpring.y),math.rad(updatedRecoilSpring.z)) * LeanOff.Value
 		lastCameraCF = workspace.CurrentCamera.CFrame
-
+		CurrentWeapon:SetPrimaryPartCFrame(workspace.Camera.CFrame * viewModelOffset.Value * CFrame.new(GunBobUpdate.Y,GunBobUpdate.X,0)*SwayOffset*CFrame.Angles(math.rad(GunRCSpringUpdate.Y),0,0)) --CFrame.Angles(math.rad(GunBobUpdate.Y),math.rad(GunBobUpdate.X),math.rad(GunBobUpdate.Z))
+	
 	end
 end
 
@@ -272,6 +272,7 @@ ControlsBegan.LeftLean.Event:Connect(function()
 			T2:Play()
 			return
 		end
+
 		local T2 = TweenService:Create(LeanOff,GeneralTween,{Value = CFrame.new(-0.5,-0.05,0)*CFrame.Angles(0,0,math.asin(math.rad(25)))})
 		T2:Play()
 		QLean = true
@@ -331,7 +332,7 @@ ControlsBegan.MouseButton2.Event:Connect(function()
 			T:Play()
 			Tween:Play()	
 			Tween.Completed:Connect(function()
-				viewModelOffset.Value = CurrentWeapon[CurrentWeapon.Name].Aim.CFrame:toObjectSpace(CurrentWeapon.PrimaryPart.CFrame)
+				CurrentWeapon[CurrentWeapon.Name].Aim.CFrame = Camera.CFrame
 			end)
 			aiming = true
 		end
@@ -590,6 +591,7 @@ end)
 
 ControlsEnded.Sprint.Event:Connect(function()
 	if aiming == false then
+		Sprinting = false
 		local Properties = {FieldOfView = 90}
 		local T = TweenService:Create(Camera,GeneralTween,Properties)
 		local T2 = TweenService:Create(viewModelOffset,GeneralTween,{Value = CFrame.new(0,-1.5,0)})
@@ -604,6 +606,7 @@ ControlsEnded.LeftLean.Event:Connect(function()
 		local T2 = TweenService:Create(LeanOff,GeneralTween,{Value = CFrame.new(0,0,0)})
 		T2:Play()
 		Remotes.Core.LeanPlayer:InvokeServer(false)
+		T2.Completed:Wait()
 		QLean = false
 	end
 end)
@@ -613,6 +616,7 @@ ControlsEnded.RightLean.Event:Connect(function()
 		local T2 = TweenService:Create(LeanOff,GeneralTween,{Value = CFrame.new(0,0,0)})
 		T2:Play()
 		Remotes.Core.LeanPlayer:InvokeServer(false)
+		T2.Completed:Wait()
 		ELean = false
 	end
 end)
