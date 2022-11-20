@@ -340,11 +340,12 @@ ControlsBegan.MouseButton2.Event:Connect(function()
 			T:Play()
 			Tween:Play()
 			aimDisableOffset = true
+			SwayOffset = CFrame.new(0,0,0)
 			Tween.Completed:Connect(function()
 				aimDisableOffset = false
-				local offset4 = CurrentWeapon[CurrentWeapon.Name].Aim.CFrame:toObjectSpace(CurrentWeapon.PrimaryPart.CFrame)
+				--local offset4 = CurrentWeapon[CurrentWeapon.Name].Aim.CFrame:toObjectSpace(CurrentWeapon.PrimaryPart.CFrame)
 	
-				TweenService:Create(viewModelOffset, TweenInfo.new(0.1,Enum.EasingStyle.Sine,Enum.EasingDirection.Out), {Value=offset4}):Play()
+				--TweenService:Create(viewModelOffset, TweenInfo.new(0.1,Enum.EasingStyle.Sine,Enum.EasingDirection.Out), {Value=offset4}):Play()
 			end)
 			aiming = true
 		end
