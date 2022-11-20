@@ -204,19 +204,21 @@ function onLengthChanged(cast, lastPoint, direction, length, velocity, bullet)
 end
 
 
-Remotes.Gun.Fire.OnServerInvoke = function(player,mousePos,Tag,timeSent)
+Remotes.Gun.Fire.OnServerEvent:Connect( function(player,mousePos,Tag,timeSent)
 	local code = {}
 	if player.Character.Humanoid.Health <= 0 then 
 		code[1]=2
 		code[2]=5
-		return code	
+		Remotes.Gun.Fire.FireClient(player,code)
+		return;
 	end
 	--sty
 	local currentWeapon = Items[Tag]
 	if not currentWeapon then
 		code[1]=4
 		code[2]=5
-		return code	
+		Remotes.Gun.Fire.FireClient(player,code)
+		return;
 	end
 	if fireData[player.UserId] == nil then
 		fireData[player.UserId] = {}
@@ -234,7 +236,6 @@ Remotes.Gun.Fire.OnServerInvoke = function(player,mousePos,Tag,timeSent)
 	if fireData[player.UserId][Tag] == nil then
 		fireData[player.UserId][Tag] = {
 			["LastShot"] = os.clock()-10,
-			["001Warns"] = 0,
 			["Reloading"] = false
 		}
 	end
@@ -243,19 +244,22 @@ Remotes.Gun.Fire.OnServerInvoke = function(player,mousePos,Tag,timeSent)
 		fireData[player.UserId][Tag].LastShot = os.clock() + 5
 		code[1] = 4
 		code[2] = 5
-		return code
+		Remotes.Gun.Fire.FireClient(player,code)
+		return;
 	end
 
 	local ItemValues = ReplicatedStorage.Items[currentWeapon.NameTag.Value]
 
 	if fireData[player.UserId][Tag].LastShot + ItemValues.TimeBetweenBullets.Value - player:GetNetworkPing() >= os.clock() then 
 		code[1] = 1
-		return code
+		Remotes.Gun.Fire.FireClient(player,code)
+		return;
 	end 
 	if currentWeapon.Magazine.Value <= 0 or ReloadData[player.UserId].Reloading == true then
 		fireData[player.UserId][Tag].LastShot = os.clock() + ItemValues.ReloadTime.Value
 		code[1] = 7
-		return code
+		Remotes.Gun.Fire.FireClient(player,code)
+		return;
 	end
 	if currentWeapon.Owner.Value ~= player.UserId then
 		BanSystem.AnticheatBanOnline(player,"026","Player tried to shoot a gun that didn't belong to them")
@@ -264,7 +268,7 @@ Remotes.Gun.Fire.OnServerInvoke = function(player,mousePos,Tag,timeSent)
 	local bullet = Instance.new("Part")
 	bullet.Size = Vector3.new(0.1,0.1,0.1)
 	bullet.Transparency = 1
-	
+
 	local findplrfrombullet = Instance.new("ObjectValue")
 	findplrfrombullet.Name = "Owner"
 	findplrfrombullet.Value = player.Character
@@ -272,15 +276,15 @@ Remotes.Gun.Fire.OnServerInvoke = function(player,mousePos,Tag,timeSent)
 
 	bullet:SetAttribute("Gun", currentWeapon.NameTag.Value)
 
-	bullet:SetAttribute("BC",timeSent)
+	--bullet:SetAttribute("BC",timeSent)
 
 	bullet:SetAttribute("Damage", ItemValues.Damage.Value)
-	
+
 	castParams.FilterDescendantsInstances = {player,player.Character,bulletsFolder}
 	castBehaviour.RaycastParams = castParams
 	castBehaviour.CosmeticBulletContainer = bulletsFolder
 	castBehaviour.CosmeticBulletTemplate = bullet
-	
+
 	local sprd = ItemValues.Spread.Value
 	fireData[player.UserId][Tag].LastShot = os.clock()
 	currentWeapon.Magazine.Value -= 1
@@ -299,7 +303,7 @@ Remotes.Gun.Fire.OnServerInvoke = function(player,mousePos,Tag,timeSent)
 	local dir = spread*(mousePos - player.Character.Head.Position).Unit * 100
 	local vel = ItemValues.BulletVelocity.Value
 	caster:Fire(org,dir,vel,castBehaviour)
-	
+
 	coroutine.wrap(function()
 		for _,plr in players:GetPlayers() do
 			if player ~= plr then
@@ -310,15 +314,14 @@ Remotes.Gun.Fire.OnServerInvoke = function(player,mousePos,Tag,timeSent)
 	if ItemValues.SingleFire.Value == true then 
 		code[1] = 3
 		code[2] = ItemValues.TimeBetweenBullets.Value
-	else
-		code[1] = 0
-		code[2] = ItemValues.TimeBetweenBullets.Value
+		Remotes.Gun.Fire.FireClient(player,code)
+		return;
 	end
-	return code
+
 	--coroutine.wrap(function()
 	--end)()
 
-end
+end)
 
 caster.LengthChanged:Connect(onLengthChanged)
 caster.RayHit:Connect(onRayHit)

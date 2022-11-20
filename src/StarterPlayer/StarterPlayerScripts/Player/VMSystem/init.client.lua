@@ -61,6 +61,7 @@ local QLean = nil
 local ELean = nil
 local MeleeThrow = false
 local aimDisableOffset = false
+local lastResponse = 0
 
 --
 
@@ -449,7 +450,6 @@ ControlsBegan.MouseButton1.Event:Connect(function()
 				pcall(function()
 					CurrentWeapon.Humanoid:LoadAnimation(CurrentWeapon.ClientAnimations.Fire):Play()
 				end)
-				local lastResponse = os.clock()
 				coroutine.wrap(function()
 					local magAmt = Remotes.Gun.getAmmo:InvokeServer(CurrentWeapon:GetAttribute("Tag"))
 					if magAmt <= 0 then
@@ -466,30 +466,8 @@ ControlsBegan.MouseButton1.Event:Connect(function()
 					else
 						YVal = coil.Y + (math.random(10,40)/100)
 					end
-					coroutine.wrap(function()
-						CSShoot.Fire(mouse.Hit.Position,CurrentWeapon,startD,CurrentWeapon.Name)
-					end)()
-					coroutine.wrap(function()
-						local firVal = Remotes.Gun.Fire:InvokeServer(mouse.Hit.Position,CurrentWeapon:GetAttribute("Tag"),startD)
-						if firVal[1] == 0 or firVal[1] == 1 then
-							lastResponse = os.clock()
-						elseif firVal[1] == 4 then
-							deEquip()
-							heldMouse1 = false
-							return
-						elseif firVal[1] == 3 then
-							if aiming == true then
-								RCSpring:shove(Vector3.new(coil.X,YVal,0))
-							else
-								RCSpring:shove(Vector3.new(coil.X*1.5,YVal*1.5,0))
-							end
-							heldMouse1 = false
-							return
-						else
-							heldMouse1 = false
-							return
-						end
-					end)()
+					CSShoot.Fire(mouse.Hit.Position,CurrentWeapon,startD,CurrentWeapon.Name)
+					Remotes.Gun.Fire:FireServer(mouse.Hit.Position,CurrentWeapon:GetAttribute("Tag"),startD)
 					RCSpring:shove(Vector3.new(coil.X,YVal,0))
 
 				end)()
@@ -585,7 +563,6 @@ end)
 
 ControlsEnded.Sprint.Event:Connect(function()
 	if aiming == false then
-		Sprinting = false
 		local Properties = {FieldOfView = 90}
 		local T = TweenService:Create(Camera,GeneralTween,Properties)
 		local T2 = TweenService:Create(viewModelOffset,GeneralTween,{Value = CFrame.new(0,-1.5,0)})
@@ -615,7 +592,18 @@ ControlsEnded.RightLean.Event:Connect(function()
 	end
 end)
 
-
+Remotes.Gun.Fire.OnClientEvent:Connect(function(firVal)
+	if firVal[1] == 0 or firVal[1] == 1 then
+		lastResponse = os.clock()
+	elseif firVal[1] == 4 then
+		deEquip()
+		heldMouse1 = false
+		return
+	else
+		heldMouse1 = false
+		return
+	end
+end)
 
 --[[
 
