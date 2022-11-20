@@ -97,12 +97,17 @@ function RenderStepped.CurrentWeapon(delta)
 								
 				SwayOffset = SwayOffset:Lerp(CFrame.Angles(math.sin(x)*AimSwayMultiplier,math.sin(y)*AimSwayMultiplier,0),0.1)
 			end
-		end
-		
-		Camera.CFrame *= CFrame.Angles(math.rad(updatedRecoilSpring.x),math.rad(updatedRecoilSpring.y),math.rad(updatedRecoilSpring.z)) * LeanOff.Value
-		lastCameraCF = workspace.CurrentCamera.CFrame
-		CurrentWeapon:SetPrimaryPartCFrame(workspace.Camera.CFrame * viewModelOffset.Value * CFrame.new(GunBobUpdate.Y,GunBobUpdate.X,0)*SwayOffset*CFrame.Angles(math.rad(GunRCSpringUpdate.Y),0,0)) --CFrame.Angles(math.rad(GunBobUpdate.Y),math.rad(GunBobUpdate.X),math.rad(GunBobUpdate.Z))
+			Camera.CFrame *= CFrame.Angles(math.rad(updatedRecoilSpring.x),math.rad(updatedRecoilSpring.y),math.rad(updatedRecoilSpring.z)) * LeanOff.Value
+			lastCameraCF = workspace.CurrentCamera.CFrame
+			CurrentWeapon:SetPrimaryPartCFrame(workspace.Camera.CFrame * viewModelOffset.Value * CFrame.new(GunBobUpdate.Y,GunBobUpdate.X,0)*SwayOffset*CFrame.Angles(math.rad(GunRCSpringUpdate.Y),0,0)) --CFrame.Angles(math.rad(GunBobUpdate.Y),math.rad(GunBobUpdate.X),math.rad(GunBobUpdate.Z))
 	
+		else
+			CurrentWeapon:SetPrimaryPartCFrame(workspace.Camera.CFrame * viewModelOffset.Value) --CFrame.Angles(math.rad(GunBobUpdate.Y),math.rad(GunBobUpdate.X),math.rad(GunBobUpdate.Z))
+	
+			Camera.CFrame *= CFrame.Angles(math.rad(updatedRecoilSpring.x),math.rad(updatedRecoilSpring.y),math.rad(updatedRecoilSpring.z))
+		end
+	
+
 	end
 end
 
