@@ -342,7 +342,9 @@ ControlsBegan.MouseButton2.Event:Connect(function()
 			aimDisableOffset = true
 			Tween.Completed:Connect(function()
 				aimDisableOffset = false
-				CurrentWeapon[CurrentWeapon.Name].Aim.CFrame = Camera.CFrame
+				local offset4 = CurrentWeapon[CurrentWeapon.Name].Aim.CFrame:toObjectSpace(CurrentWeapon.PrimaryPart.CFrame)
+	
+				TweenService:Create(viewModelOffset, TweenInfo.new(0.1,Enum.EasingStyle.Sine,Enum.EasingDirection.Out), {Value=offset4}):Play()
 			end)
 			aiming = true
 		end
