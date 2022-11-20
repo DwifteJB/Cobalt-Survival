@@ -209,7 +209,7 @@ Remotes.Gun.Fire.OnServerEvent:Connect( function(player,mousePos,Tag,timeSent)
 	if player.Character.Humanoid.Health <= 0 then 
 		code[1]=2
 		code[2]=5
-		Remotes.Gun.Fire.FireClient(player,code)
+		Remotes.Gun.Fire:FireClient(player,code)
 		return;
 	end
 	--sty
@@ -217,7 +217,7 @@ Remotes.Gun.Fire.OnServerEvent:Connect( function(player,mousePos,Tag,timeSent)
 	if not currentWeapon then
 		code[1]=4
 		code[2]=5
-		Remotes.Gun.Fire.FireClient(player,code)
+		Remotes.Gun.Fire:FireClient(player,code)
 		return;
 	end
 	if fireData[player.UserId] == nil then
@@ -244,7 +244,7 @@ Remotes.Gun.Fire.OnServerEvent:Connect( function(player,mousePos,Tag,timeSent)
 		fireData[player.UserId][Tag].LastShot = os.clock() + 5
 		code[1] = 4
 		code[2] = 5
-		Remotes.Gun.Fire.FireClient(player,code)
+		Remotes.Gun.Fire:FireClient(player,code)
 		return;
 	end
 
@@ -252,13 +252,13 @@ Remotes.Gun.Fire.OnServerEvent:Connect( function(player,mousePos,Tag,timeSent)
 
 	if fireData[player.UserId][Tag].LastShot + ItemValues.TimeBetweenBullets.Value - player:GetNetworkPing() >= os.clock() then 
 		code[1] = 1
-		Remotes.Gun.Fire.FireClient(player,code)
+		Remotes.Gun.Fire:FireClient(player,code)
 		return;
 	end 
 	if currentWeapon.Magazine.Value <= 0 or ReloadData[player.UserId].Reloading == true then
 		fireData[player.UserId][Tag].LastShot = os.clock() + ItemValues.ReloadTime.Value
 		code[1] = 7
-		Remotes.Gun.Fire.FireClient(player,code)
+		Remotes.Gun.Fire:FireClient(player,code)
 		return;
 	end
 	if currentWeapon.Owner.Value ~= player.UserId then
@@ -314,7 +314,7 @@ Remotes.Gun.Fire.OnServerEvent:Connect( function(player,mousePos,Tag,timeSent)
 	if ItemValues.SingleFire.Value == true then 
 		code[1] = 3
 		code[2] = ItemValues.TimeBetweenBullets.Value
-		Remotes.Gun.Fire.FireClient(player,code)
+		Remotes.Gun.Fire:FireClient(player,code)
 		return;
 	end
 
