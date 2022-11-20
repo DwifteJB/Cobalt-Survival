@@ -145,9 +145,9 @@ function onRayHit(cast,result,velocity,bullet)
 	local hit = result.Instance
 	if hit == nil then return end
 	local character = hit:FindFirstAncestorWhichIsA("Model")
-	local plrAtcking = players:GetPlayerFromCharacter(bullet.Owner.Value)	
+	local plrAtcking = players:GetPlayerFromCharacter(bullet.Owner.Value)
 
-	local BC = bullet:GetAttribute("BC")
+	--local BC = bullet:GetAttribute("BC")
 	local Damage = bullet:GetAttribute("Damage")
 	local Gun = bullet:GetAttribute("Gun")
 	if character and character:FindFirstChild("Humanoid") then
@@ -160,7 +160,7 @@ function onRayHit(cast,result,velocity,bullet)
 		else
 			DamageSystem.DamageNPC(plrAtcking,character:FindFirstChild("Humanoid"),hit,Damage)
 		end
-	else
+	--else
 		-- #CLIENTSIDEPREDICTION BulletData[plrAtcking.UserId][BC]["Hit"]=hit
 	end
 

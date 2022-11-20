@@ -60,6 +60,7 @@ local reloading = false
 local QLean = nil
 local ELean = nil
 local MeleeThrow = false
+local aimDisableOffset = false
 
 --
 
@@ -85,17 +86,19 @@ function RenderStepped.CurrentWeapon(delta)
 		CurrentWeapon.Humanoid.UseJumpPower = false
 		local rotation = Camera.CFrame:ToObjectSpace(lastCameraCF)
 		local x,y = rotation:ToOrientation()
-		if aiming == false then
-			local bob = Vector3.new(Bob(10,0.65),Bob(5,0.65),Bob(5,0.65))
-			BobbingSpring:shove(bob / 10 * (player.Character.HumanoidRootPart.Velocity.Magnitude / 10))
-			SwayOffset = SwayOffset:Lerp(CFrame.Angles(math.sin(x)*SwayMultiplier,math.sin(y)*SwayMultiplier,0),0.1)
-		else
-			local bob = Vector3.new(Bob(1,0.1),Bob(0.5,0.1),Bob(0.5,0.1))
-			BobbingSpring:shove(bob / 10 * (player.Character.HumanoidRootPart.Velocity.Magnitude / 10))
-							
-			SwayOffset = SwayOffset:Lerp(CFrame.Angles(math.sin(x)*AimSwayMultiplier,math.sin(y)*AimSwayMultiplier,0),0.1)
+		if not aimDisableOffset then
+			if aiming == false then
+				local bob = Vector3.new(Bob(10,0.65),Bob(5,0.65),Bob(5,0.65))
+				BobbingSpring:shove(bob / 10 * (player.Character.HumanoidRootPart.Velocity.Magnitude / 10))
+				SwayOffset = SwayOffset:Lerp(CFrame.Angles(math.sin(x)*SwayMultiplier,math.sin(y)*SwayMultiplier,0),0.1)
+			else
+				local bob = Vector3.new(Bob(1,0.1),Bob(0.5,0.1),Bob(0.5,0.1))
+				BobbingSpring:shove(bob / 10 * (player.Character.HumanoidRootPart.Velocity.Magnitude / 10))
+								
+				SwayOffset = SwayOffset:Lerp(CFrame.Angles(math.sin(x)*AimSwayMultiplier,math.sin(y)*AimSwayMultiplier,0),0.1)
+			end
 		end
-
+		
 		Camera.CFrame *= CFrame.Angles(math.rad(updatedRecoilSpring.x),math.rad(updatedRecoilSpring.y),math.rad(updatedRecoilSpring.z)) * LeanOff.Value
 		lastCameraCF = workspace.CurrentCamera.CFrame
 		CurrentWeapon:SetPrimaryPartCFrame(workspace.Camera.CFrame * viewModelOffset.Value * CFrame.new(GunBobUpdate.Y,GunBobUpdate.X,0)*SwayOffset*CFrame.Angles(math.rad(GunRCSpringUpdate.Y),0,0)) --CFrame.Angles(math.rad(GunBobUpdate.Y),math.rad(GunBobUpdate.X),math.rad(GunBobUpdate.Z))
@@ -330,8 +333,10 @@ ControlsBegan.MouseButton2.Event:Connect(function()
 			local Properties = {FieldOfView = 80}
 			local T = TweenService:Create(Camera,GeneralTween,Properties)
 			T:Play()
-			Tween:Play()	
+			Tween:Play()
+			aimDisableOffset = true
 			Tween.Completed:Connect(function()
+				aimDisableOffset = false
 				CurrentWeapon[CurrentWeapon.Name].Aim.CFrame = Camera.CFrame
 			end)
 			aiming = true
@@ -439,19 +444,12 @@ ControlsBegan.MouseButton1.Event:Connect(function()
 		end --act as a 'control'
 		local coil = repItems.Recoil.Value
 
-		local FirePoint = CurrentWeapon[CurrentWeapon.Name]:FindFirstChild("FirePoint")
-
 		coroutine.wrap(function()
 			while heldMouse1 == true do
 				pcall(function()
 					CurrentWeapon.Humanoid:LoadAnimation(CurrentWeapon.ClientAnimations.Fire):Play()
 				end)
 				local lastResponse = os.clock()
-				if FirePoint then
-					for _,v in FirePoint:GetChildren() do
-						v.Enabled = true
-					end
-				end
 				coroutine.wrap(function()
 					local magAmt = Remotes.Gun.getAmmo:InvokeServer(CurrentWeapon:GetAttribute("Tag"))
 					if magAmt <= 0 then
@@ -499,11 +497,6 @@ ControlsBegan.MouseButton1.Event:Connect(function()
 					task.wait(0.2)
 				end
 				task.wait(repItems.TimeBetweenBullets.Value)
-				if FirePoint then
-					for _,v in FirePoint:GetChildren() do
-						v.Enabled = false
-					end
-				end
 
 			end
 		end)()
@@ -572,6 +565,7 @@ ControlsEnded.MouseButton2.Event:Connect(function()
 					ELean = false
 				end
 				aiming = false
+				aimDisableOffset = false
 			end
 		else
 			-- melee weapons! :)
