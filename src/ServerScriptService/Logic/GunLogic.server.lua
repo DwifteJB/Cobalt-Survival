@@ -250,7 +250,7 @@ Remotes.Gun.Fire.OnServerEvent:Connect( function(player,mousePos,Tag,timeSent)
 
 	local ItemValues = ReplicatedStorage.Items[currentWeapon.NameTag.Value]
 
-	if fireData[player.UserId][Tag].LastShot + ItemValues.TimeBetweenBullets.Value - player:GetNetworkPing() >= os.clock() then 
+	if fireData[player.UserId][Tag].LastShot + ItemValues.TimeBetweenBullets.Value - (player:GetNetworkPing() * 100) >= os.clock() then 
 		code[1] = 1
 		Remotes.Gun.Fire:FireClient(player,code)
 		return;

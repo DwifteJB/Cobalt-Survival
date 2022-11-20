@@ -61,7 +61,6 @@ local QLean = nil
 local ELean = nil
 local MeleeThrow = false
 local aimDisableOffset = false
-local lastResponse = 0
 
 --
 
@@ -471,9 +470,6 @@ ControlsBegan.MouseButton1.Event:Connect(function()
 					RCSpring:shove(Vector3.new(coil.X,YVal,0))
 
 				end)()
-				if lastResponse + 2 + repItems.TimeBetweenBullets.Value < os.clock() then
-					task.wait(0.2)
-				end
 				task.wait(repItems.TimeBetweenBullets.Value)
 
 			end
@@ -593,13 +589,8 @@ ControlsEnded.RightLean.Event:Connect(function()
 end)
 
 Remotes.Gun.Fire.OnClientEvent:Connect(function(firVal)
-	if firVal[1] == 0 or firVal[1] == 1 then
-		lastResponse = os.clock()
-	elseif firVal[1] == 4 then
+	if firVal[1] == 4 then
 		deEquip()
-		heldMouse1 = false
-		return
-	else
 		heldMouse1 = false
 		return
 	end
